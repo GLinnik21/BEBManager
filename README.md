@@ -1,1 +1,2 @@
-isp
+# Status
+Git repository initialized.
