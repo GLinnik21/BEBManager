@@ -19,6 +19,11 @@ class TestDomainEntitiesCreation(unittest.TestCase):
 
         self.assertIsNot(tag, None)
 
+    def test_user_creation(self):
+        user = User("Beb", unique_id="ea04de40-a0ac-4c2f-9060-6b359aefb90a", password_hash="hash")
+
+        self.assertIsNot(user, None)
+
     def test_card_creation(self):
         name = "Hello wold"
         description = "Just another hello world card"

@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e4452b44-ffdc-4007-9fcc-5cf0eca991ef" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/core/entity/domain_entites.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/domain/domain_entites_tests.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/domain_entites.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/entity/domain_entites.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/entity/domain_entites.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/domain/domain_entites_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/domain/domain_entites_tests.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -15,7 +13,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/tracker_api$Unittests_for_domain_entites_tests_TestDomainEntitiesCreation.coverage" NAME="Unittests for domain_entites_tests.TestDomainEntitiesCreation Coverage Results" MODIFIED="1525114993530" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests/domain" />
+    <SUITE FILE_PATH="coverage/tracker_api$Unittests_for_domain_entites_tests_TestDomainEntitiesCreation.coverage" NAME="Unittests for domain_entites_tests.TestDomainEntitiesCreation Coverage Results" MODIFIED="1525121249163" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests/domain" />
     <SUITE FILE_PATH="coverage/tracker_api$Unittests_for_domain_entites_tests_TestDomainEntities.coverage" NAME="Unittests for domain_entites_tests.TestDomainEntities Coverage Results" MODIFIED="1525093573777" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests/domain" />
     <SUITE FILE_PATH="coverage/tracker_api$Unittests_for_domain_entites_tests_TestDomainEntities_test_card_creation.coverage" NAME="Unittests for domain_entites_tests.TestDomainEntities.test_card_creation Coverage Results" MODIFIED="1525094123018" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests/domain" />
     <SUITE FILE_PATH="coverage/tracker_api$Unittests_for_domain_entites_tests_TestDomainEntitiesCreation_test_card_creation.coverage" NAME="Unittests for domain_entites_tests.TestDomainEntitiesCreation.test_card_creation Coverage Results" MODIFIED="1525094697684" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests/domain" />
@@ -38,14 +36,23 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="domain_entites.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="domain_entites.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/entity/domain_entites.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="765">
-              <caret line="51" column="85" selection-start-line="51" selection-start-column="85" selection-end-line="51" selection-end-column="85" />
+            <state relative-caret-position="300">
+              <caret line="20" column="62" selection-start-line="20" selection-start-column="62" selection-end-line="20" selection-end-column="62" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="domain_entites_tests.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/tests/domain/domain_entites_tests.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="315">
+              <caret line="22" column="96" selection-start-line="22" selection-start-column="96" selection-end-line="22" selection-end-column="96" />
             </state>
           </provider>
         </entry>
@@ -70,6 +77,7 @@
       <list>
         <option value="$PROJECT_DIR$/domain_entites.py" />
         <option value="$PROJECT_DIR$/domain/domain_entites.py" />
+        <option value="$PROJECT_DIR$/core/entity/domain_entites.py" />
         <option value="$PROJECT_DIR$/tests/domain/domain_entites_tests.py" />
       </list>
     </option>
@@ -251,9 +259,6 @@
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Unittests_for_domain_entites_tests_TestDomainEntities - 2018.04.30 at 16h 05m 38s.xml">
-      <configuration name="Unittests for domain_entites_tests.TestDomainEntities" configurationId="tests" />
-    </history-entry>
     <history-entry file="Unittests_for_domain_entites_tests_TestDomainEntities - 2018.04.30 at 16h 06m 14s.xml">
       <configuration name="Unittests for domain_entites_tests.TestDomainEntities" configurationId="tests" />
     </history-entry>
@@ -281,9 +286,13 @@
     <history-entry file="Unittests_for_domain_entites_tests_TestDomainEntitiesCreation - 2018.04.30 at 22h 03m 14s.xml">
       <configuration name="Unittests for domain_entites_tests.TestDomainEntitiesCreation" configurationId="tests" />
     </history-entry>
+    <history-entry file="Unittests_for_domain_entites_tests_TestDomainEntitiesCreation - 2018.04.30 at 23h 47m 30s.xml">
+      <configuration name="Unittests for domain_entites_tests.TestDomainEntitiesCreation" configurationId="tests" />
+    </history-entry>
   </component>
   <component name="ToolWindowManager">
     <frame x="38" y="23" width="1882" height="1057" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" weight="0.32911393" />
@@ -292,7 +301,7 @@
       <window_info anchor="bottom" id="Python Console" order="7" weight="0.32911393" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.32896066" />
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.32911393" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49949545" visible="true" weight="0.1173913" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49949545" visible="true" weight="0.1173913" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="right" id="Database" order="3" />
       <window_info anchor="right" id="SciView" order="3" />
@@ -368,23 +377,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tests/domain/domain_entites_tests.py">
+    <entry file="file://$PROJECT_DIR$/core/entity/domain_entites.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="810">
-          <caret line="54" selection-start-line="54" selection-end-line="54" />
+        <state relative-caret-position="300">
+          <caret line="20" column="62" selection-start-line="20" selection-start-column="62" selection-end-line="20" selection-end-column="62" />
           <folding>
-            <element signature="e#0#15#0" expanded="true" />
+            <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/entity/domain_entites.py">
+    <entry file="file://$PROJECT_DIR$/tests/domain/domain_entites_tests.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="765">
-          <caret line="51" column="85" selection-start-line="51" selection-start-column="85" selection-end-line="51" selection-end-column="85" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="315">
+          <caret line="22" column="96" selection-start-line="22" selection-start-column="96" selection-end-line="22" selection-end-column="96" />
         </state>
       </provider>
     </entry>

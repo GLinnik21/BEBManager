@@ -15,11 +15,14 @@ class Tag(UniqueObject):
         self.color = color
 
 
+class User(UniqueObject):
+    def __init__(self, name, **kwargs):
+        super(User, self).__init__(name, kwargs.get('unique_id', None))
+        self.password_hash = kwargs.get("password_hash", None)
+
+
 class Card(UniqueObject):
     def __init__(self, name, **kwargs):
-        """
-        :param kwargs:
-        """
         super(Card, self).__init__(name, kwargs.get('unique_id', None))
         self.description = kwargs.get('description', None)
         self.expiration_date = kwargs.get('expiration_date', None)
