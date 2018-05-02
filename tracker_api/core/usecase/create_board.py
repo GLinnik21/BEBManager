@@ -2,7 +2,7 @@ from collections import namedtuple
 from core.entity.domain_entites import UniversalContainer
 from core.usecase.interfaces import IInputBoundary
 
-BoardRequest = namedtuple('BoardRequest', ['name', 'uuid'])
+BoardCreationRequest = namedtuple('BoardCreationRequest', ['name', 'uuid'])
 
 
 class CreateBoardUseCase(IInputBoundary):
