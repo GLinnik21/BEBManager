@@ -56,4 +56,3 @@ class ICardsRepo(metaclass=ABCMeta):
     @abstractmethod
     def modify_card(self, card):
         pass
-

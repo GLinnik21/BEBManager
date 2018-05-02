@@ -1,5 +1,5 @@
 from collections import namedtuple
-from core.entity.domain_entites import UniversalContainer, Card
+from core.entity.domain_entites import Card
 from core.usecase.interfaces import IInputBoundary
 
 CardCreationRequest = namedtuple('CardCreationRequest',

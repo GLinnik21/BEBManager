@@ -4,8 +4,8 @@ import copy
 
 class UniqueObject:
     def __init__(self, name=None, unique_id=None):
-        self._unique_identifier = (unique_id is None and uuid.uuid4()) or \
-                                  ((unique_id is uuid and copy.deepcopy(unique_id)) or uuid.UUID(unique_id))
+        self.unique_identifier = (unique_id is None and uuid.uuid4()) or \
+                                 ((unique_id is uuid and copy.deepcopy(unique_id)) or uuid.UUID(unique_id))
         self.name = name
 
 
