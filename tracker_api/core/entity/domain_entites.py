@@ -10,20 +10,20 @@ class UniqueObject:
 
 
 class Tag(UniqueObject):
-    def __init__(self, name, color, **kwargs):
-        super(Tag, self).__init__(name, kwargs.get('unique_id', None))
-        self.color = color
+    def __init__(self, **kwargs):
+        super(Tag, self).__init__(kwargs.get('name', None), kwargs.get('unique_id', None))
+        self.color = kwargs.get('color', None)
 
 
 class User(UniqueObject):
-    def __init__(self, name, **kwargs):
-        super(User, self).__init__(name, kwargs.get('unique_id', None))
+    def __init__(self, **kwargs):
+        super(User, self).__init__(kwargs.get('name', None), kwargs.get('unique_id', None))
         self.password_hash = kwargs.get("password_hash", None)
 
 
 class Card(UniqueObject):
-    def __init__(self, name, **kwargs):
-        super(Card, self).__init__(name, kwargs.get('unique_id', None))
+    def __init__(self, **kwargs):
+        super(Card, self).__init__(kwargs.get('name', None), kwargs.get('unique_id', None))
         self.description = kwargs.get('description', None)
         self.expiration_date = kwargs.get('expiration_date', None)
         self.priority = kwargs.get('priority', None)
@@ -51,8 +51,8 @@ class Card(UniqueObject):
 
 
 class UniversalContainer(UniqueObject):
-    def __init__(self, name, **kwargs):
-        super(UniversalContainer, self).__init__(name, kwargs.get('unique_id', None))
+    def __init__(self, **kwargs):
+        super(UniversalContainer, self).__init__(kwargs.get('name', None), kwargs.get('unique_id', None))
         self._unique_objects = kwargs.get('unique_objects', [])
 
     @property
