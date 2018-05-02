@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
 
-class BoardsRepo(metaclass=ABCMeta):
+class IBoardsRepo(metaclass=ABCMeta):
 
     @abstractmethod
     def list_boards(self):
@@ -20,7 +20,7 @@ class BoardsRepo(metaclass=ABCMeta):
         pass
 
 
-class ListsRepo(metaclass=ABCMeta):
+class IListsRepo(metaclass=ABCMeta):
 
     @abstractmethod
     def list_lists(self, board_id):
@@ -39,7 +39,7 @@ class ListsRepo(metaclass=ABCMeta):
         pass
 
 
-class CardsRepo(metaclass=ABCMeta):
+class ICardsRepo(metaclass=ABCMeta):
 
     @abstractmethod
     def list_cards(self, list_id):
