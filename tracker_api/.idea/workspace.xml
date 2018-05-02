@@ -2,8 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e4452b44-ffdc-4007-9fcc-5cf0eca991ef" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/core/entity/domain_entites.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/entity/domain_entites.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/domain/domain_entites_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/domain/domain_entites_tests.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dictionaries/gleblinnik.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/repo/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/repo/interfaces.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/usecase/create_board.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/usecase/interfaces.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -17,6 +23,7 @@
     <SUITE FILE_PATH="coverage/tracker_api$Unittests_for_domain_entites_tests_TestDomainEntities.coverage" NAME="Unittests for domain_entites_tests.TestDomainEntities Coverage Results" MODIFIED="1525093573777" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests/domain" />
     <SUITE FILE_PATH="coverage/tracker_api$Unittests_for_domain_entites_tests_TestDomainEntities_test_card_creation.coverage" NAME="Unittests for domain_entites_tests.TestDomainEntities.test_card_creation Coverage Results" MODIFIED="1525094123018" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests/domain" />
     <SUITE FILE_PATH="coverage/tracker_api$Unittests_for_domain_entites_tests_TestDomainEntitiesCreation_test_card_creation.coverage" NAME="Unittests for domain_entites_tests.TestDomainEntitiesCreation.test_card_creation Coverage Results" MODIFIED="1525094697684" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests/domain" />
+    <SUITE FILE_PATH="coverage/tracker_api$main.coverage" NAME="main Coverage Results" MODIFIED="1525241461164" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/tracker_api$domain_entites.coverage" NAME="domain_entites Coverage Results" MODIFIED="1525006708857" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/tracker_api$Unittests_for_domain_entites_tests_TestDomainEntities_test_tag_creation.coverage" NAME="Unittests for domain_entites_tests.TestDomainEntities.test_tag_creation Coverage Results" MODIFIED="1525093601563" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests/domain" />
   </component>
@@ -35,11 +42,11 @@
     <select />
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file leaf-file-name="domain_entites.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/entity/domain_entites.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="300">
+            <state relative-caret-position="-13">
               <caret line="20" column="62" selection-start-line="20" selection-start-column="62" selection-end-line="20" selection-end-column="62" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
@@ -48,11 +55,41 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="domain_entites_tests.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/tests/domain/domain_entites_tests.py">
+      <file leaf-file-name="create_board.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/core/usecase/create_board.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="315">
-              <caret line="22" column="96" selection-start-line="22" selection-start-column="96" selection-end-line="22" selection-end-column="96" />
+            <state relative-caret-position="60">
+              <caret line="4" column="50" selection-start-line="4" selection-start-column="50" selection-end-line="4" selection-end-column="50" />
+              <folding>
+                <element signature="e#0#34#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="interfaces.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/core/usecase/interfaces.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="420">
+              <caret line="28" column="12" selection-start-line="28" selection-start-column="12" selection-end-line="28" selection-end-column="12" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="interfaces.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/core/repo/interfaces.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="180">
+              <caret line="12" lean-forward="true" selection-start-line="12" selection-end-line="12" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="main.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/main.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="135">
+              <caret line="9" lean-forward="true" selection-start-line="9" selection-end-line="9" />
             </state>
           </provider>
         </entry>
@@ -79,6 +116,16 @@
         <option value="$PROJECT_DIR$/domain/domain_entites.py" />
         <option value="$PROJECT_DIR$/core/entity/domain_entites.py" />
         <option value="$PROJECT_DIR$/tests/domain/domain_entites_tests.py" />
+        <option value="$PROJECT_DIR$/core/usecase/BoardAccessService.py" />
+        <option value="$PROJECT_DIR$/core/usecase/BoardAccessUseCase.py" />
+        <option value="$PROJECT_DIR$/requirements.txt" />
+        <option value="$PROJECT_DIR$/core/usecase/Interfaces.py" />
+        <option value="$PROJECT_DIR$/core/usecase/board_access_use_case.py" />
+        <option value="$PROJECT_DIR$/main.py" />
+        <option value="$PROJECT_DIR$/core/entity/entities_repos.py" />
+        <option value="$PROJECT_DIR$/core/repo/interfaces.py" />
+        <option value="$PROJECT_DIR$/core/usecase/interfaces.py" />
+        <option value="$PROJECT_DIR$/core/usecase/create_board.py" />
       </list>
     </option>
   </component>
@@ -93,9 +140,9 @@
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="38" />
-    <option name="y" value="92" />
-    <option name="width" value="1723" />
-    <option name="height" value="988" />
+    <option name="y" value="23" />
+    <option name="width" value="1882" />
+    <option name="height" value="1057" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -103,6 +150,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -118,26 +166,32 @@
             <path>
               <item name="tracker_api" type="b2602c69:ProjectViewProjectNode" />
               <item name="tracker_api" type="462c0819:PsiDirectoryNode" />
-              <item name="tests" type="462c0819:PsiDirectoryNode" />
+              <item name="core" type="462c0819:PsiDirectoryNode" />
+              <item name="entity" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="tracker_api" type="b2602c69:ProjectViewProjectNode" />
               <item name="tracker_api" type="462c0819:PsiDirectoryNode" />
-              <item name="tests" type="462c0819:PsiDirectoryNode" />
-              <item name="domain" type="462c0819:PsiDirectoryNode" />
+              <item name="core" type="462c0819:PsiDirectoryNode" />
+              <item name="repo" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="tracker_api" type="b2602c69:ProjectViewProjectNode" />
+              <item name="tracker_api" type="462c0819:PsiDirectoryNode" />
+              <item name="core" type="462c0819:PsiDirectoryNode" />
+              <item name="usecase" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
-    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -157,7 +211,26 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python tests.Unittests for domain_entites_tests.TestDomainEntitiesCreation">
+  <component name="RunManager" selected="Python.main">
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="tracker_api" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
     <configuration name="Unittests for domain_entites_tests.TestDomainEntitiesCreation" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
       <module name="tracker_api" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -184,20 +257,6 @@
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
       <option name="_new_target" value="&quot;domain_entites_tests.TestDomainEntitiesCreation.test_card_creation&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-    </configuration>
-    <configuration name="Unittests for tests.domain.domain_entites_tests.TestDomainEntitiesCreation" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
-      <module name="tracker_api" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/domain" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;tests.domain.domain_entites_tests.TestDomainEntitiesCreation&quot;" />
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
     </configuration>
     <configuration name="Unittests for tests.domain.domain_entites_tests.TestDomainEntitiesCreation.test_card_creation" type="tests" factoryName="Unittests" temporary="true" nameIsGenerated="true">
@@ -230,18 +289,18 @@
     </configuration>
     <list>
       <item itemvalue="Python tests.Unittests for tests.domain.domain_entites_tests.TestDomainEntitiesCreation.test_card_creation" />
-      <item itemvalue="Python tests.Unittests for tests.domain.domain_entites_tests.TestDomainEntitiesCreation" />
       <item itemvalue="Python tests.Unittests for tests.domain.domain_entites_tests.TestDomainEntitiesCreation.test_tag_creation" />
       <item itemvalue="Python tests.Unittests for domain_entites_tests.TestDomainEntitiesCreation.test_card_creation" />
       <item itemvalue="Python tests.Unittests for domain_entites_tests.TestDomainEntitiesCreation" />
+      <item itemvalue="Python.main" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.main" />
         <item itemvalue="Python tests.Unittests for domain_entites_tests.TestDomainEntitiesCreation" />
         <item itemvalue="Python tests.Unittests for domain_entites_tests.TestDomainEntitiesCreation.test_card_creation" />
         <item itemvalue="Python tests.Unittests for tests.domain.domain_entites_tests.TestDomainEntitiesCreation.test_card_creation" />
         <item itemvalue="Python tests.Unittests for tests.domain.domain_entites_tests.TestDomainEntitiesCreation.test_tag_creation" />
-        <item itemvalue="Python tests.Unittests for tests.domain.domain_entites_tests.TestDomainEntitiesCreation" />
       </list>
     </recent_temporary>
   </component>
@@ -299,13 +358,13 @@
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Python Console" order="7" weight="0.32911393" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.32896066" />
+      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.23511605" />
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.32911393" />
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49949545" visible="true" weight="0.1173913" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49736148" visible="true" weight="0.14239131" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="right" id="Database" order="3" />
       <window_info anchor="right" id="SciView" order="3" />
-      <window_info id="Structure" order="1" sideWeight="0.50050455" side_tool="true" visible="true" weight="0.1173913" />
+      <window_info id="Structure" order="1" sideWeight="0.5026385" side_tool="true" visible="true" weight="0.14239131" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3994374" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -324,6 +383,54 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/core/entity/domain_entites.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="20" column="62" selection-start-line="20" selection-start-column="62" selection-end-line="20" selection-end-column="62" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/domain/domain_entites_tests.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="22" column="96" selection-start-line="22" selection-start-column="96" selection-end-line="22" selection-end-column="96" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/usecase/board_access_use_case.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="8" selection-start-line="4" selection-start-column="8" selection-end-line="4" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/entity/domain_entites.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="20" column="62" selection-start-line="20" selection-start-column="62" selection-end-line="20" selection-end-column="62" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/domain/domain_entites_tests.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="22" column="96" selection-start-line="22" selection-start-column="96" selection-end-line="22" selection-end-column="96" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/usecase/board_access_use_case.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/core/entity/domain_entites.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="210">
@@ -377,13 +484,36 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/entity/domain_entites.py">
+    <entry file="file://$PROJECT_DIR$/core/usecase/BoardAccessService.py" />
+    <entry file="uml://Python/#/Users/gleblinnik/Developer/isp/tracker_api/core/entity/domain_entites.py">
+      <provider selected="true" editor-type-id="UmlEditorProvider">
+        <state>
+          <ID>Python</ID>
+          <OriginalElement>#/Users/gleblinnik/Developer/isp/tracker_api/core/entity/domain_entites.py</OriginalElement>
+          <nodes>
+            <node x="" y="">core.entity.domain_entites.UniqueObject</node>
+            <node x="" y="">core.entity.domain_entites.Tag</node>
+            <node x="" y="">core.entity.domain_entites.UniversalContainer</node>
+            <node x="" y="">core.entity.domain_entites.Card</node>
+            <node x="" y="">object</node>
+            <node x="" y="">core.entity.domain_entites.User</node>
+          </nodes>
+          <notes />
+          <edges />
+          <settings layout="Hierarchic Group" zoom="1.0" x="562.0" y="586.0" />
+          <SelectedNodes />
+          <Categories>
+            <Category>Methods</Category>
+            <Category>Fields</Category>
+          </Categories>
+          <SCOPE>All</SCOPE>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/requirements.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="20" column="62" selection-start-line="20" selection-start-column="62" selection-end-line="20" selection-end-column="62" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="15">
+          <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
         </state>
       </provider>
     </entry>
@@ -391,6 +521,60 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="315">
           <caret line="22" column="96" selection-start-line="22" selection-start-column="96" selection-end-line="22" selection-end-column="96" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/usecase/board_access_use_case.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="3" column="24" selection-start-line="3" selection-start-column="6" selection-end-line="3" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/entity/entities_repos.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/repo/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" lean-forward="true" selection-start-line="9" selection-end-line="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/entity/domain_entites.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-13">
+          <caret line="20" column="62" selection-start-line="20" selection-start-column="62" selection-end-line="20" selection-end-column="62" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/repo/interfaces.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="12" lean-forward="true" selection-start-line="12" selection-end-line="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/usecase/interfaces.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="420">
+          <caret line="28" column="12" selection-start-line="28" selection-start-column="12" selection-end-line="28" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/usecase/create_board.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="50" selection-start-line="4" selection-start-column="50" selection-end-line="4" selection-end-column="50" />
+          <folding>
+            <element signature="e#0#34#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
