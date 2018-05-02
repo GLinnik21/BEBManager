@@ -16,6 +16,6 @@ class ListCardsUseCase(IInputBoundary):
             response = []
 
             for board in boards:
-                response.append(ListCardsResponseListItem(name=board.name, uuid=board.unique_identifier))
+                response.append(ListBoardsResponseListItem(name=board.name, uuid=board.unique_identifier))
 
             output_port.present(response)
