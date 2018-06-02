@@ -1,5 +1,5 @@
 import unittest
-from core.entity.domain_entites import *
+from domain_entities import *
 
 
 class TestDomainEntitiesCreation(unittest.TestCase):
@@ -12,10 +12,10 @@ class TestDomainEntitiesCreation(unittest.TestCase):
 
         self.assertIsNot(u_object, None)
         self.assertEqual(u_object.name, name)
-        self.assertEqual(u_object._unique_identifier, uuid.UUID(uid))
+        self.assertEqual(u_object.unique_identifier, uuid.UUID(uid))
 
     def test_tag_creation(self):
-        tag = Tag("Yellow tag", "FF0000", unique_id="ea04de40-a0ac-4c2f-9060-6b359aefb90a")
+        tag = Tag("Yellow tag", "ea04de40-a0ac-4c2f-9060-6b359aefb90a", "FF0000")
 
         self.assertIsNot(tag, None)
 
@@ -31,7 +31,7 @@ class TestDomainEntitiesCreation(unittest.TestCase):
         parent_card = Card("Parent")
         first_child_card = Card("1 child")
         second_child_card = Card("2 child")
-        tag = Tag("Yellow tag", "FF0000", unique_id="ea04de40-a0ac-4c2f-9060-6b359aefb90a")
+        tag = Tag("Yellow tag", "ea04de40-a0ac-4c2f-9060-6b359aefb90a", "FF0000")
         priority = 100
 
         card = Card(name, description=description,
@@ -48,12 +48,11 @@ class TestDomainEntitiesCreation(unittest.TestCase):
         self.assertIs(parent_card, card.parent)
 
     def test_universal_container_creation(self):
-        first_object = UniqueObject()
-        second_object = UniqueObject("Hello", "ea04de40-a0ac-4c2f-9060-6b359aefb90a")
+        first_object = Card("Card")
+        second_object = Card("Hello", "ea04de40-a0ac-4c2f-9060-6b359aefb90a")
 
-        container = UniversalContainer("Cards list", unique_id="ea04de40-a0ac-4c2f-9060-6b359aefb90a",
-                                       unique_objects=[first_object, second_object])
+        container = CardsList("Cards list", "ea04de40-a0ac-4c2f-9060-6b359aefb90a", [first_object, second_object])
 
         self.assertIsNot(container, None)
-        self.assertIn(first_object, container.unique_objects)
-        self.assertIn(second_object, container.unique_objects)
+        self.assertIn(first_object, container.cards)
+        self.assertIn(second_object, container.cards)
