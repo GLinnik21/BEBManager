@@ -1,4 +1,4 @@
-from provider_interfaces import *
+from app.provider_interfaces import *
 
 
 BoardDataRequest = namedtuple('BoardDataRequest', ['name', 'user', 'access_type'])
@@ -13,9 +13,8 @@ CardDataRequest = namedtuple('CardDataRequest',
 class Model(IProvider):
     storage_provider: IProvider
 
-    def __init__(self):
-        self.storage_provider = None
-        self.subscribers = None
+    def __init__(self, storage_provider: IProvider = None):
+        self.storage_provider = storage_provider
 
     def execute(self, request: namedtuple, subscriber: IProviderSubscriber = None) -> None:
         provider: IProvider = None
