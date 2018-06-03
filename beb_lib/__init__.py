@@ -1,2 +1,4 @@
-from beb_lib.domain_entities import *
-from beb_lib.provider_interfaces import *
+from .domain_entities import *
+from .provider_interfaces import *
+from .model import *
+from .user_board_belonging import *
