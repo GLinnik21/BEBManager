@@ -1,8 +1,8 @@
-import uuid
 import copy
+import uuid
 from datetime import datetime
 from enum import IntEnum
-from typing import Union, Optional, Any, List
+from typing import Union, Any, List
 from uuid import UUID
 
 
@@ -150,7 +150,7 @@ class CardsList(UniqueObject):
     def __init__(self,
                  name: str,
                  unique_id: Union[str, UUID] = None,
-                 cards: Card = None):
+                 cards: List[Card] = None):
         """
 
         :param name: Name of the list

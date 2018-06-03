@@ -1,4 +1,4 @@
-from app.provider_interfaces import *
+from beb_lib.provider_interfaces import *
 
 
 BoardDataRequest = namedtuple('BoardDataRequest', ['name', 'user', 'access_type'])
