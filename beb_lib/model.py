@@ -1,10 +1,11 @@
-from beb_lib.provider_interfaces import *
+from collections import namedtuple
+from beb_lib import IProviderSubscriber, IProvider
 
 
-BoardDataRequest = namedtuple('BoardDataRequest', ['name', 'user', 'request_type'])
-ListDataRequest = namedtuple('ListDataRequest', ['name', 'user', 'request_type'])
+BoardDataRequest = namedtuple('BoardDataRequest', ['id', 'name', 'user', 'request_type'])
+ListDataRequest = namedtuple('ListDataRequest', ['id', 'name', 'user', 'request_type'])
 CardDataRequest = namedtuple('CardDataRequest',
-                            ['name', 'user', 'request_type', 'description',
+                            ['id', 'name', 'user', 'request_type', 'description',
                              'expiration_date', 'priority', 'attachments',
                              'parent', 'children', 'tags',
                              'comments', 'list'])
@@ -28,7 +29,7 @@ class Model(IProvider):
         """
 
         :param request: Request DTO to process
-        :param subscriber:
+        :param subscriber: Object of IProviderSubscriber-compliant class that is mean to process the respond to request
         """
         provider: IProvider = None
 
