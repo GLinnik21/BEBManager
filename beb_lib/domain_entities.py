@@ -9,7 +9,7 @@ from uuid import UUID
 class UniqueObject:
     """
     Base class for all entities. It declares fields that every entity must have.
-    Should be used only for subclassing not for creating instances of this class
+    Should be used only for subclassing, not for creating instances of this class
     """
 
     def __init__(self, name: str = None, unique_id: Union[str, UUID] = None) -> None:
@@ -49,17 +49,14 @@ class User(UniqueObject):
 
     def __init__(self,
                  name: str,
-                 unique_id: Union[str, UUID] = None,
-                 password_hash: str = None
+                 unique_id: Union[str, UUID] = None
                  ) -> None:
         """
 
         :param name: Username
         :param unique_id: Unique identifier of user. If None is passed a new UUID would be generated
-        :param password_hash: Salted password hash.
         """
         super(User, self).__init__(name, unique_id)
-        self.password_hash = password_hash
 
 
 class Priority(IntEnum):
