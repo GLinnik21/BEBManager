@@ -1,1 +1,2 @@
+json_tricks
 uuid==1.30
