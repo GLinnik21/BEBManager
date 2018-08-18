@@ -95,7 +95,9 @@ class Card(UniqueObject):
                  parent: UniqueObject = None,
                  children: List[UniqueObject] = None,
                  tags: List[Tag] = None,
-                 comments: List[Comment] = None
+                 comments: List[Comment] = None,
+                 created: datetime = None,
+                 last_edited: datetime = None,
                  ) -> None:
         """
 
@@ -110,6 +112,8 @@ class Card(UniqueObject):
         :param children: Children cards
         :param tags: Tags to sort cards by them
         :param comments: Comments by users to this task
+        :param created: Date when the task was created
+        :param last_edited: Date when the task was last edited
         """
         super(Card, self).__init__(name, unique_id)
         self.description = description
@@ -120,6 +124,8 @@ class Card(UniqueObject):
         self._children = children
         self._tags = tags
         self._comments = comments
+        self.created = created
+        self.last_edited = last_edited
 
     @property
     def children(self):

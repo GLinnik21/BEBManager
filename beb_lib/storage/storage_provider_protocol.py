@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
 
-class IStorageProviderDelegate(metaclass=ABCMeta):
+class IStorageProviderProtocol(metaclass=ABCMeta):
     """
     Interface that every concrete implementation of the the DB (or its analog) should conform to. It contains methods
     that StorageProvider instance would call to get desired data
@@ -21,8 +21,4 @@ class IStorageProviderDelegate(metaclass=ABCMeta):
         StorageProvider calls this method when DB is no longer needed and DB should perform any additional saving operations
         and unloading of DB file.
         """
-        pass
-
-    @abstractmethod
-    def get_card(self, card: Card):
         pass

@@ -1,5 +1,4 @@
 import argparse
-import sys
 from datetime import datetime
 
 
@@ -24,23 +23,42 @@ class CLIParser:
 
     def _add_all_parsers(self):
         self._add_card_parser()
+        self._add_user_parser()
 
-    def parse(self):
-        args = self.parser.parse_args()
+    def parse(self, args=None):
+        args = self.parser.parse_args(args)
         return args
 
-# Available objects are:
-#    board     Operate boards. Boards contain lists of cards
-#    list      Operate lists. Lists contain cards.
-#    card      Operate cards. Cards are the basic structure that's meant to represent one task
-#    user      Operate users. Users may own and have different access to cards, lists, etc.
+    # Available objects are:
+    #    board     Operate boards. Boards contain lists of cards
+    #    list      Operate lists. Lists contain cards.
+    #    card      Operate cards. Cards are the basic structure that's meant to represent one task
+    #    user      Operate users. Users may own and have different access to cards, lists, etc.
+
+    def _add_user_parser(self):
+        user_parser = self.object_subparsers.add_parser('user',
+                                                        description="Operate users. Users may own and have different "
+                                                                    "access to cards, lists, etc.",
+                                                        help="Operate users. Users may own and have different "
+                                                             "access to cards, lists, etc."
+                                                        )
+        user_subparsers = user_parser.add_subparsers(dest='command',
+                                                     metavar="<command>",
+                                                     title="commands that applicable to users")
+        user_subparsers.required = True
+
+        parser_show_user = user_subparsers.add_parser('display', description='Display user', help='Display user')
+        parser_show_user.add_argument('-a', '--all', action='store_true')
+
+        parser_add_user = user_subparsers.add_parser('add', description='Add user', help='Add user')
+        parser_add_user.add_argument('name', help='Name of the user. May be not unique')
 
     def _add_card_parser(self):
         card_parser = self.object_subparsers.add_parser('card',
                                                         description="Operate cards. Cards are the basic structure "
                                                                     "that's meant to represent one task",
                                                         help="Operate cards. Cards are the basic structure "
-                                                                    "that's meant to represent one task")
+                                                             "that's meant to represent one task")
         card_subparser = card_parser.add_subparsers(dest='command',
                                                     metavar="<command>",
                                                     title="commands that applicable to cards")
@@ -80,8 +98,3 @@ class CLIParser:
                                          help="The Expiration Date - format YYYY-MM-DD,hh:mm",
                                          type=validate_date)
         card_editing_parser.add_argument('card_id')
-
-
-if __name__ == '__main__':
-    sys.argv = "beb -h".split()
-    CLIParser().parse()
