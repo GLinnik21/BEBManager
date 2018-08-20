@@ -1,9 +1,6 @@
-import copy
-import uuid
 from datetime import datetime
 from enum import IntEnum
-from typing import Union, Any, List
-from uuid import UUID
+from typing import List
 
 
 class UniqueObject:
@@ -12,14 +9,13 @@ class UniqueObject:
     Should be used only for subclassing, not for creating instances of this class
     """
 
-    def __init__(self, name: str = None, unique_id: Union[str, UUID] = None) -> None:
+    def __init__(self, name: str = None, unique_id: int = None) -> None:
         """
 
         :param name: Name
         :param unique_id: Unique identifier of object. If None is passed a new UUID would be generated
         """
-        self.unique_identifier = (unique_id is None and uuid.uuid4()) or \
-                                 ((unique_id is UUID and copy.deepcopy(unique_id)) or uuid.UUID(unique_id))
+        self.unique_identifier = unique_id
         self.name = name
 
 
@@ -30,8 +26,8 @@ class Tag(UniqueObject):
 
     def __init__(self,
                  name: str,
-                 unique_id: Union[str, UUID] = None,
-                 color: str = None) -> None:
+                 unique_id: int = None,
+                 color: int = None) -> None:
         """
 
         :param name: Name of the tag
@@ -40,23 +36,6 @@ class Tag(UniqueObject):
         """
         super(Tag, self).__init__(name, unique_id)
         self.color = color
-
-
-class User(UniqueObject):
-    """
-    Just a simple user class
-    """
-
-    def __init__(self,
-                 name: str,
-                 unique_id: Union[str, UUID] = None
-                 ) -> None:
-        """
-
-        :param name: Username
-        :param unique_id: Unique identifier of user. If None is passed a new UUID would be generated
-        """
-        super(User, self).__init__(name, unique_id)
 
 
 class Priority(IntEnum):
@@ -70,13 +49,13 @@ class Comment:
     A simple class to store comment with relation to user
     """
 
-    def __init__(self, user: User, comment: str) -> None:
+    def __init__(self, user_id: int, comment: str) -> None:
         """
 
-        :param user: User who created with comment
+        :param user_id: User who created with comment
         :param comment: Comment text
         """
-        self.user = user
+        self.user_id = user_id
         self.comment = comment
 
 
@@ -87,17 +66,15 @@ class Card(UniqueObject):
 
     def __init__(self,
                  name: str,
-                 unique_id: Union[str, UUID] = None,
+                 unique_id: int = None,
                  description: str = None,
                  expiration_date: datetime = None,
                  priority: int = None,
-                 attachments: List[Any] = None,
                  parent: UniqueObject = None,
-                 children: List[UniqueObject] = None,
                  tags: List[Tag] = None,
                  comments: List[Comment] = None,
                  created: datetime = None,
-                 last_edited: datetime = None,
+                 last_modified: datetime = None,
                  ) -> None:
         """
 
@@ -107,33 +84,21 @@ class Card(UniqueObject):
         :param expiration_date: Date when the task should be done
         :param priority: Priority of the task. Recommended to use values from 1 to 100 or just predefined values from
         Priority enum
-        :param attachments: Any attachments
         :param parent: Parent card
-        :param children: Children cards
         :param tags: Tags to sort cards by them
         :param comments: Comments by users to this task
         :param created: Date when the task was created
-        :param last_edited: Date when the task was last edited
+        :param last_modified: Date when the task was last edited
         """
         super(Card, self).__init__(name, unique_id)
         self.description = description
         self.expiration_date = expiration_date
         self.priority = priority
-        self._attachments = attachments
         self.parent = parent
-        self._children = children
         self._tags = tags
         self._comments = comments
         self.created = created
-        self.last_edited = last_edited
-
-    @property
-    def children(self):
-        return self._children
-
-    @property
-    def attachments(self):
-        return self._attachments
+        self.last_modified = last_modified
 
     @property
     def tags(self):
@@ -152,7 +117,7 @@ class CardsList(UniqueObject):
 
     def __init__(self,
                  name: str,
-                 unique_id: Union[str, UUID] = None,
+                 unique_id: int = None,
                  cards: List[Card] = None):
         """
 
@@ -176,7 +141,7 @@ class Board(UniqueObject):
 
     def __init__(self,
                  name: str,
-                 unique_id: Union[str, UUID] = None,
+                 unique_id: int = None,
                  lists: List[CardsList] = None):
         """
 
