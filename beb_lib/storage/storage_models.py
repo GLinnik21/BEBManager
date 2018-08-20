@@ -8,7 +8,9 @@ from peewee import (
     ForeignKeyField,
     DateTimeField)
 
-from beb_lib.domain_entities import Priority
+from beb_lib.domain_entities import (
+    Priority,
+    AccessType)
 
 database_proxy = Proxy()
 
@@ -61,6 +63,24 @@ class TagCard(BaseNameModel):
     """
     tag = ForeignKeyField(Tag)
     card = ForeignKeyField(Card)
+
+
+class CardUserAccess(BaseNameModel):
+    user_id = IntegerField(null=True)
+    access_type = IntegerField(default=AccessType.READ_WRITE.value)
+    card = ForeignKeyField(Card)
+
+
+class CardListUserAccess(BaseNameModel):
+    user_id = IntegerField(null=True)
+    access_type = IntegerField(default=AccessType.READ_WRITE.value)
+    card_list = ForeignKeyField(CardList)
+
+
+class BoardUserAccess(BaseNameModel):
+    user_id = IntegerField(null=True)
+    access_type = IntegerField(default=AccessType.READ_WRITE.value)
+    board = ForeignKeyField(Board)
 
 
 class Comment(BaseModel):

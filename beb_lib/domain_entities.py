@@ -1,5 +1,5 @@
 from datetime import datetime
-from enum import IntEnum
+from enum import IntEnum, Flag, unique, auto
 from typing import List
 
 
@@ -57,6 +57,20 @@ class Comment:
         """
         self.user_id = user_id
         self.comment = comment
+
+
+@unique
+class AccessType(Flag):
+    """
+    Members of this class could be combined using the bitwise operators (&, |, ^, ~)
+    Used to determine what type of access user may have to board.
+    Use AccessType Flag enum combinations (e.g. AccessType.READ | AccessType.WRITE) for this.
+    Pass AccessType.NONE or AccessType.READ & AccessType.WRITE to ban access for user to board
+    """
+    READ = auto()
+    WRITE = auto()
+    READ_WRITE = READ | WRITE
+    NONE = READ & WRITE
 
 
 class Card(UniqueObject):
