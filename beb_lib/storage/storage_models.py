@@ -12,7 +12,7 @@ from beb_lib.domain_entities import (
     Priority,
     AccessType)
 
-database_proxy = Proxy()
+DATABASE_PROXY = Proxy()
 
 
 class BaseModel(Model):
@@ -22,7 +22,7 @@ class BaseModel(Model):
     id = PrimaryKeyField(null=False)
 
     class Meta:
-        database = database_proxy
+        database = DATABASE_PROXY
 
 
 class BaseNameModel(BaseModel):

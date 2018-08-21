@@ -1,7 +1,9 @@
 #! /usr/bin/python3.6
+import os
 import sys
 from application import (CLIParser,
-                         App)
+                         App,
+                         config)
 
 
 def main():
@@ -9,6 +11,9 @@ def main():
     Entry point
     :return:
     """
+
+    if not os.path.exists(config.APP_DATA_DIRECTORY):
+        os.makedirs(config.APP_DATA_DIRECTORY)
 
     parser = CLIParser()
     args = parser.parse()

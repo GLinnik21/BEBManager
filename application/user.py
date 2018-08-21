@@ -1,6 +1,9 @@
-from peewee import Model, PrimaryKeyField, CharField, Proxy
+from peewee import (Model,
+                    PrimaryKeyField,
+                    CharField,
+                    Proxy)
 
-database_proxy = Proxy()
+DATABASE_PROXY = Proxy()
 
 
 class UserInstance:
@@ -22,4 +25,4 @@ class User(Model):
     username = CharField()
 
     class Meta:
-        database = database_proxy
+        database = DATABASE_PROXY

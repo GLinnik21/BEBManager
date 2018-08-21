@@ -10,7 +10,6 @@ CardDataRequest = namedtuple('CardDataRequest',
                              'expiration_date', 'priority', 'attachments',
                              'parent', 'children', 'tags',
                              'comments', 'list'])
-UserDataRequest = namedtuple('UserDataRequest', ['id', 'name', 'request_type'])
 
 
 class Model(IProvider):
@@ -39,8 +38,7 @@ class Model(IProvider):
 
         if type(request).__name__ == BoardDataRequest.__name__ or\
                 type(request).__name__ == ListDataRequest.__name__ or\
-                type(request).__name__ == CardDataRequest.__name__ or\
-                type(request).__name__ == UserDataRequest.__name__:
+                type(request).__name__ == CardDataRequest.__name__:
             provider = self.storage_provider
 
         provider.execute(request, subscriber)

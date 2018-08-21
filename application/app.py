@@ -12,7 +12,7 @@ from beb_lib import (StorageProvider,
 class App(IProviderSubscriber):
 
     def __init__(self):
-        self.model = Model(StorageProvider(config.DATABASE))
+        self.model = Model(StorageProvider(config.LIB_DATABASE))
 
     def add_user(self, name):
         request = UserDataRequest(id=None, name=name, request_type=RequestType.WRITE)
