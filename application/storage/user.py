@@ -6,6 +6,10 @@ from peewee import (Model,
 DATABASE_PROXY = Proxy()
 
 
+def create_user_from_orm(user):
+    return UserInstance(user.username, user.id)
+
+
 class UserInstance:
     """
     Class for storing user

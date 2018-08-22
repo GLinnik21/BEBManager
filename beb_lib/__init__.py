@@ -8,7 +8,8 @@ from .domain_entities import (UniqueObject,
                               Board)
 from .provider_interfaces import (IProvider,
                                   IProviderSubscriber,
-                                  RequestType)
+                                  RequestType,
+                                  REQUEST_BASE_FIELDS)
 from .model import (Model,
                     BoardDataRequest,
                     CardDataRequest,

@@ -1,15 +1,22 @@
 from collections import namedtuple
 from beb_lib import (IProviderSubscriber,
-                     IProvider)
+                     IProvider,
+                     REQUEST_BASE_FIELDS)
 from .storage.storage_provider import StorageProvider
 
-BoardDataRequest = namedtuple('BoardDataRequest', ['id', 'name', 'user', 'request_type'])
-ListDataRequest = namedtuple('ListDataRequest', ['id', 'name', 'user', 'request_type'])
-CardDataRequest = namedtuple('CardDataRequest',
-                            ['id', 'name', 'user', 'request_type', 'description',
-                             'expiration_date', 'priority', 'attachments',
-                             'parent', 'children', 'tags',
-                             'comments', 'list'])
+BoardDataRequest = namedtuple('BoardDataRequest', REQUEST_BASE_FIELDS + ['id', 'name', 'user'])
+ListDataRequest = namedtuple('ListDataRequest', REQUEST_BASE_FIELDS + ['id', 'name', 'user'])
+CardDataRequest = namedtuple('CardDataRequest', REQUEST_BASE_FIELDS + ['id',
+                                                                       'name',
+                                                                       'user',
+                                                                       'description',
+                                                                       'expiration_date',
+                                                                       'priority',
+                                                                       'parent',
+                                                                       'children',
+                                                                       'tags',
+                                                                       'comments',
+                                                                       'list'])
 
 
 class Model(IProvider):

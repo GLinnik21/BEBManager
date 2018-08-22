@@ -11,11 +11,15 @@ class RequestType(Enum):
     DELETE = auto()
 
 
+REQUEST_BASE_FIELDS = ['request_id', 'request_type']
+
+
 class IProviderSubscriber(metaclass=ABCMeta):
     """
     Interface for entities that have to respond somehow to IProvider signals. This is needed to implement async requests
     in the future.
     """
+
     @abstractmethod
     def process(self, respond: Any, error: namedtuple = None) -> None:
         """
@@ -30,6 +34,7 @@ class IProvider(metaclass=ABCMeta):
     """
     Interface for classes that are responsible for processing or mediating something
     """
+
     @abstractmethod
     def execute(self, request: namedtuple, subscriber: IProviderSubscriber = None) -> None:
         """
