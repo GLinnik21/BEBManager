@@ -9,7 +9,8 @@ from .domain_entities import (UniqueObject,
 from .provider_interfaces import (IProvider,
                                   IProviderSubscriber,
                                   RequestType,
-                                  REQUEST_BASE_FIELDS)
+                                  REQUEST_BASE_FIELDS,
+                                  RESPONSE_BASE_FIELDS)
 from .model import (Model,
                     BoardDataRequest,
                     CardDataRequest,

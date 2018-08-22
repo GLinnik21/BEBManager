@@ -12,6 +12,7 @@ class RequestType(Enum):
 
 
 REQUEST_BASE_FIELDS = ['request_id', 'request_type']
+RESPONSE_BASE_FIELDS = ['request_id']
 
 
 class IProviderSubscriber(metaclass=ABCMeta):
@@ -21,7 +22,7 @@ class IProviderSubscriber(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def process(self, respond: Any, error: namedtuple = None) -> None:
+    def process(self, respond: namedtuple, error: namedtuple = None) -> None:
         """
 
         :param respond: Object that IProvider could send (e.g. object fetched from the DB in response to request)
