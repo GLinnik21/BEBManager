@@ -1,5 +1,5 @@
 import unittest
-from beb_lib.domain_entities import *
+from library.domain_entities import *
 
 
 class TestDomainEntitiesCreation(unittest.TestCase):

@@ -1,7 +1,7 @@
 from collections import namedtuple
 from beb_lib import (IProviderSubscriber,
                      IProvider,
-                     REQUEST_BASE_FIELDS)
+                     REQUEST_BASE_FIELDS, BaseError)
 from .storage.storage_provider import StorageProvider
 
 BoardDataRequest = namedtuple('BoardDataRequest', REQUEST_BASE_FIELDS + ['id', 'name', 'user'])
@@ -24,6 +24,7 @@ class Model(IProvider):
     Base mediator between all requests. It's created for future extensions.
     For now it processes only storage-related requests
     """
+
     storage_provider: StorageProvider
 
     def __init__(self, storage_provider: StorageProvider):
@@ -43,9 +44,12 @@ class Model(IProvider):
         """
         provider: IProvider = None
 
-        if type(request).__name__ == BoardDataRequest.__name__ or\
-                type(request).__name__ == ListDataRequest.__name__ or\
+        if type(request).__name__ == BoardDataRequest.__name__ or \
+                type(request).__name__ == ListDataRequest.__name__ or \
                 type(request).__name__ == CardDataRequest.__name__:
             provider = self.storage_provider
 
         provider.execute(request, subscriber)
+
+    def sync_execute(self, request: namedtuple) -> (namedtuple, BaseError):
+        pass

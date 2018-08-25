@@ -9,7 +9,7 @@ class UniqueObject:
     Should be used only for subclassing, not for creating instances of this class
     """
 
-    def __init__(self, name: str = None, unique_id: int = None) -> None:
+    def __init__(self, name: str = None, unique_id: int = None):
         """
 
         :param name: Name
@@ -27,7 +27,7 @@ class Tag(UniqueObject):
     def __init__(self,
                  name: str,
                  unique_id: int = None,
-                 color: int = None) -> None:
+                 color: int = None):
         """
 
         :param name: Name of the tag
@@ -49,7 +49,7 @@ class Comment:
     A simple class to store comment with relation to user
     """
 
-    def __init__(self, user_id: int, comment: str) -> None:
+    def __init__(self, user_id: int, comment: str):
         """
 
         :param user_id: User who created with comment
@@ -89,7 +89,7 @@ class Card(UniqueObject):
                  comments: List[Comment] = None,
                  created: datetime = None,
                  last_modified: datetime = None,
-                 ) -> None:
+                 ):
         """
 
         :param name: Name of the card.

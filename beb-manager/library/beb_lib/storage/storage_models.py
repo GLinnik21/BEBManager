@@ -6,11 +6,13 @@ from peewee import (
     IntegerField,
     CharField,
     ForeignKeyField,
-    DateTimeField)
+    DateTimeField
+)
 
-from beb_lib.domain_entities import (
+from ..domain_entities import (
     Priority,
-    AccessType)
+    AccessType
+)
 
 DATABASE_PROXY = Proxy()
 

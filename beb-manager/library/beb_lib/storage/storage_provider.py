@@ -1,7 +1,8 @@
 from collections import namedtuple
 from peewee import SqliteDatabase
 from beb_lib import (IProviderSubscriber,
-                     IProvider)
+                     IProvider,
+                     BaseError)
 from .storage_provider_protocol import IStorageProviderProtocol
 from .storage_models import (Board,
                              CardList,
@@ -44,4 +45,7 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
         self.database.close()
 
     def execute(self, request: namedtuple, subscriber: IProviderSubscriber = None) -> None:
+        pass
+
+    def sync_execute(self, request: namedtuple) -> (namedtuple, BaseError):
         pass

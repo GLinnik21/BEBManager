@@ -1,7 +1,6 @@
 from enum import Enum, unique, auto
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
-from typing import Any
 
 
 @unique
@@ -15,10 +14,13 @@ REQUEST_BASE_FIELDS = ['request_id', 'request_type']
 RESPONSE_BASE_FIELDS = ['request_id']
 
 
+BaseError = namedtuple('BaseError', ['code', 'description'])
+
+
 class IProviderSubscriber(metaclass=ABCMeta):
     """
-    Interface for entities that have to respond somehow to IProvider signals. This is needed to implement async requests
-    in the future.
+    Interface for entities that have to respond somehow to IProvider signals. This is needed to implement async
+    requests.
     """
 
     @abstractmethod
@@ -39,10 +41,20 @@ class IProvider(metaclass=ABCMeta):
     @abstractmethod
     def execute(self, request: namedtuple, subscriber: IProviderSubscriber = None) -> None:
         """
-
+        This method is meant to be used for asynchronous calls
         :param request: Meant to use a simple DTO, defined in concrete IProvider implementation
          with the description of the request (use RequestType enum provided)
         :param subscriber: Optional object of IProviderSubscriber-compliant class that is meant to be passed through all
          IProvider chain to be called in response
+        """
+        pass
+
+    @abstractmethod
+    def sync_execute(self, request: namedtuple) -> (namedtuple, BaseError):
+        """
+
+        :param request: Meant to use a simple DTO, defined in concrete IProvider implementation
+         with the description of the request (use RequestType enum provided)
+        :return: Result of execution. Similar to 'process' method from 'IProviderSubscriber'.
         """
         pass

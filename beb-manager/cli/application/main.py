@@ -1,9 +1,8 @@
-#! /usr/bin/python3.6
 import os
-import sys
+
 from application import (CLIParser,
-                         App,
-                         config)
+                         config,
+                         App)
 
 
 def main():
@@ -27,5 +26,5 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.argv = "beb user add Beb".split()
+    # sys.argv = "beb user display".split()
     main()
