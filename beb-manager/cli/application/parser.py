@@ -21,10 +21,6 @@ class CLIParser:
 
         self._add_all_parsers()
 
-    def _add_all_parsers(self):
-        self._add_card_parser()
-        self._add_user_parser()
-
     def parse(self, args=None):
         args = self.parser.parse_args(args)
         return args
@@ -34,6 +30,10 @@ class CLIParser:
     #    list      Operate lists. Lists contain cards.
     #    card      Operate cards. Cards are the basic structure that's meant to represent one task
     #    user      Operate users. Users may own and have different access to cards, lists, etc.
+
+    def _add_all_parsers(self):
+        self._add_card_parser()
+        self._add_user_parser()
 
     def _add_user_parser(self):
         user_parser = self.object_subparsers.add_parser('user',
@@ -47,11 +47,26 @@ class CLIParser:
                                                      title="commands that applicable to users")
         user_subparsers.required = True
 
-        parser_show_user = user_subparsers.add_parser('display', description='Display user', help='Display user')
-        parser_show_user.add_argument('-a', '--all', action='store_true')
+        user_subparsers.add_parser('current', description='Display current user', help='display current user')
 
-        parser_add_user = user_subparsers.add_parser('add', description='Add user', help='Add user')
-        parser_add_user.add_argument('name', help='Name of the user. May be not unique')
+        parser_add_user = user_subparsers.add_parser('add', description='Add user', help='add user')
+        parser_add_user.add_argument('username', help='name of the user')
+
+        parser_login_user = user_subparsers.add_parser('login',
+                                                       description='Login with username or id',
+                                                       help='login with username or id')
+
+        parser_login_user_group = parser_login_user.add_mutually_exclusive_group()
+        parser_login_user_group.required = True
+
+        parser_login_user_group.add_argument('-i', '--id', type=int, help='id of the user')
+        parser_login_user_group.add_argument('-n', '--username', help='name of the user')
+
+        user_subparsers.add_parser('logout',
+                                   description='Logout from current user',
+                                   help='logout from current user')
+
+        user_subparsers.add_parser('all', description='Display all users', help='display all users')
 
     def _add_card_parser(self):
         card_parser = self.object_subparsers.add_parser('card',

@@ -20,7 +20,6 @@ UserDataResponse = namedtuple('UserDataResponse', RESPONSE_BASE_FIELDS + ['users
 
 @unique
 class ErrorCodes(Enum):
-    NoDataSpecified = auto()
     UserDoesNotExist = auto()
 
 
@@ -43,6 +42,7 @@ class UserProvider(IProvider, IStorageProviderProtocol):
 
     def close(self) -> None:
         self.database.close()
+        self.is_connected = False
 
     def execute(self, request: namedtuple, subscriber: IProviderSubscriber = None) -> None:
         t = Thread(target=self._async_execute, args=(request, subscriber,))
@@ -60,12 +60,11 @@ class UserProvider(IProvider, IStorageProviderProtocol):
             user_response = [create_user_from_orm(user)]
         elif request.request_type == RequestType.READ:
             try:
-                if request.id is not None and request.name is not None:
-                    return None, BaseError(code=ErrorCodes.NoDataSpecified, description='No data was specified')
+                if request.id is None and request.name is None:
+                    query = User.select()
                 else:
-                    query = User.select().where(User.id == request.id | User.username == request.name)
-                    user_response = [create_user_from_orm(orm_user) for orm_user in query]
-
+                    query = User.select().where((User.id == request.id) | (User.username == request.name))
+                user_response = [create_user_from_orm(orm_user) for orm_user in query]
             except DoesNotExist:
                 return None, BaseError(code=ErrorCodes.UserDoesNotExist, description="User doesn't exist")
         elif request.request_type == RequestType.DELETE:

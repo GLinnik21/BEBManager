@@ -1,4 +1,5 @@
 import os
+import sys
 
 from application import (CLIParser,
                          config,
@@ -19,12 +20,20 @@ def main():
     app = App()
 
     if args.object == 'user':
-        if args.command == 'add':
-            app.add_user(args.name)
+        if args.command == 'current':
+            app.print_current_user()
+        elif args.command == 'add':
+            app.add_user(args.username)
+        elif args.command == 'login':
+            app.login_user(args.username, args.id)
+        elif args.command == 'logout':
+            app.logout_user()
+        elif args.command == 'all':
+            app.print_all_users()
     elif args.object == 'card':
         pass
 
 
 if __name__ == '__main__':
-    # sys.argv = "beb user display".split()
+    sys.argv = "beb user all".split()
     main()
