@@ -1,7 +1,7 @@
 from collections import namedtuple
 from threading import Thread
-from peewee import SqliteDatabase, DoesNotExist
-from enum import Enum, unique, auto
+from peewee import SqliteDatabase
+from enum import IntEnum, unique, auto
 
 from beb_lib import (IProvider,
                      IStorageProviderProtocol,
@@ -19,8 +19,8 @@ UserDataResponse = namedtuple('UserDataResponse', RESPONSE_BASE_FIELDS + ['users
 
 
 @unique
-class ErrorCodes(Enum):
-    UserDoesNotExist = auto()
+class UserProviderErrorCodes(IntEnum):
+    USER_DOES_NOT_EXIST = auto()
 
 
 class UserProvider(IProvider, IStorageProviderProtocol):
@@ -59,14 +59,13 @@ class UserProvider(IProvider, IStorageProviderProtocol):
             user = User.create(id=request.id, username=request.name)
             user_response = [create_user_from_orm(user)]
         elif request.request_type == RequestType.READ:
-            try:
-                if request.id is None and request.name is None:
-                    query = User.select()
-                else:
-                    query = User.select().where((User.id == request.id) | (User.username == request.name))
-                user_response = [create_user_from_orm(orm_user) for orm_user in query]
-            except DoesNotExist:
-                return None, BaseError(code=ErrorCodes.UserDoesNotExist, description="User doesn't exist")
+            if request.id is None and request.name is None:
+                query = User.select()
+            else:
+                query = User.select().where((User.id == request.id) | (User.username == request.name))
+                if query.count() == 0:
+                    return None, BaseError(code=UserProviderErrorCodes.USER_DOES_NOT_EXIST, description="User doesn't exist")
+            user_response = [create_user_from_orm(orm_user) for orm_user in query]
         elif request.request_type == RequestType.DELETE:
             User.delete().where(User.id == request.id).execute()
 

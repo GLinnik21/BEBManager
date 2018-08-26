@@ -35,5 +35,5 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.argv = "beb user all".split()
+    sys.argv = "beb user add Beb".split()
     main()

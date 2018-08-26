@@ -8,6 +8,7 @@ from beb_lib import (StorageProvider,
 from storage import (UserProvider,
                      UserDataRequest,
                      UserInstance)
+from storage.user_provider import UserProviderErrorCodes
 
 
 class App:
@@ -17,6 +18,57 @@ class App:
         self.user_provider = UserProvider(config.APP_DATABASE)
         self.user_provider.open()
         self.authorization_manager = AuthorizationManager(config.CONFIG_FILE)
+
+    def get_all_users(self) -> List[UserInstance]:
+        request = UserDataRequest(request_id=random.randrange(1000000),
+                                  id=None,
+                                  name=None,
+                                  request_type=RequestType.READ)
+        result = self.user_provider.sync_execute(request)[0]
+        users = sorted(result.users, key=lambda user: user.unique_id)
+        return users
+
+    def get_user_by_name(self, name: str) -> Optional[UserInstance]:
+        request = UserDataRequest(request_id=random.randrange(1000000),
+                                  id=None,
+                                  name=name,
+                                  request_type=RequestType.READ)
+        result = self.user_provider.sync_execute(request)
+
+        error: Optional[BaseError] = result[1]
+
+        if error is not None:
+            if error.code == UserProviderErrorCodes.USER_DOES_NOT_EXIST:
+                return None
+            print("Database error: {}".format(result[1].description))
+            quit(error.code)
+
+        users: Optional[List[UserInstance]] = result[0].users
+        if not users:
+            return None
+        else:
+            return users[0]
+
+    def get_user_by_id(self, user_id: int) -> Optional[UserInstance]:
+        request = UserDataRequest(request_id=random.randrange(1000000),
+                                  id=user_id,
+                                  name=None,
+                                  request_type=RequestType.READ)
+        result = self.user_provider.sync_execute(request)
+
+        error: Optional[BaseError] = result[1]
+
+        if error is not None:
+            if error.code == UserProviderErrorCodes.USER_DOES_NOT_EXIST:
+                return None
+            print("Database error: {}".format(result[1].description))
+            quit(error.code)
+
+        users: Optional[List[UserInstance]] = result[0].users
+        if not users:
+            return None
+        else:
+            return users[0]
 
     def add_user(self, name: str) -> None:
         request = UserDataRequest(request_id=random.randrange(1000000),
@@ -68,53 +120,6 @@ class App:
 
         self.authorization_manager.login_user(user)
         print("Successfully logged in as {}".format(user.name))
-
-    def get_user_by_id(self, user_id: int) -> Optional[UserInstance]:
-        request = UserDataRequest(request_id=random.randrange(1000000),
-                                  id=user_id,
-                                  name=None,
-                                  request_type=RequestType.READ)
-        result = self.user_provider.sync_execute(request)
-
-        error: Optional[BaseError] = result[1]
-
-        if error is not None:
-            print("Database error: {}".format(result[1].description))
-            quit(error.code)
-
-        users: Optional[List[UserInstance]] = result[0].users
-        if not users:
-            return None
-        else:
-            return users[0]
-
-    def get_user_by_name(self, name: str) -> Optional[UserInstance]:
-        request = UserDataRequest(request_id=random.randrange(1000000),
-                                  id=None,
-                                  name=name,
-                                  request_type=RequestType.READ)
-        result = self.user_provider.sync_execute(request)
-
-        error: Optional[BaseError] = result[1]
-
-        if error is not None:
-            print("Database error: {}".format(result[1].description))
-            quit(error.code)
-
-        users: Optional[List[UserInstance]] = result[0].users
-        if not users:
-            return None
-        else:
-            return users[0]
-
-    def get_all_users(self) -> List[UserInstance]:
-        request = UserDataRequest(request_id=random.randrange(1000000),
-                                  id=None,
-                                  name=None,
-                                  request_type=RequestType.READ)
-        result = self.user_provider.sync_execute(request)[0]
-        users = sorted(result.users, key=lambda user: user.unique_id)
-        return users
 
     def print_all_users(self) -> None:
         users = self.get_all_users()
