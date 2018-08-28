@@ -44,25 +44,10 @@ class Priority(IntEnum):
     HIGH = 100
 
 
-class Comment:
-    """
-    A simple class to store comment with relation to user
-    """
-
-    def __init__(self, user_id: int, comment: str):
-        """
-
-        :param user_id: User who created with comment
-        :param comment: Comment text
-        """
-        self.user_id = user_id
-        self.comment = comment
-
-
 @unique
 class AccessType(Flag):
     """
-    Members of this class could be combined using the bitwise operators (&, |, ^, ~)
+    Members of this class could be combined using the bitwise operators (&, |, ^)
     Used to determine what type of access user may have to board.
     Use AccessType Flag enum combinations (e.g. AccessType.READ | AccessType.WRITE) for this.
     Pass AccessType.NONE or AccessType.READ & AccessType.WRITE to ban access for user to board
@@ -81,12 +66,13 @@ class Card(UniqueObject):
     def __init__(self,
                  name: str,
                  unique_id: int = None,
+                 user_id: int = None,
+                 assignee_id: int = None,
                  description: str = None,
                  expiration_date: datetime = None,
                  priority: int = None,
                  parent: UniqueObject = None,
                  tags: List[Tag] = None,
-                 comments: List[Comment] = None,
                  created: datetime = None,
                  last_modified: datetime = None,
                  ):
@@ -94,33 +80,31 @@ class Card(UniqueObject):
 
         :param name: Name of the card.
         :param unique_id: Unique identifier of card. If None is passed a new UUID would be generated
+        :param user_id: The id of the user who has created with card
+        :param assignee_id: The id of the user who the particular card was assigned
         :param description: Task description
         :param expiration_date: Date when the task should be done
         :param priority: Priority of the task. Recommended to use values from 1 to 100 or just predefined values from
         Priority enum
         :param parent: Parent card
         :param tags: Tags to sort cards by them
-        :param comments: Comments by users to this task
         :param created: Date when the task was created
         :param last_modified: Date when the task was last edited
         """
         super(Card, self).__init__(name, unique_id)
+        self.user_id = user_id
+        self.assignee_id = assignee_id
         self.description = description
         self.expiration_date = expiration_date
         self.priority = priority
         self.parent = parent
         self._tags = tags
-        self._comments = comments
         self.created = created
         self.last_modified = last_modified
 
     @property
     def tags(self):
         return self._tags
-
-    @property
-    def comments(self):
-        return self._comments
 
 
 class CardsList(UniqueObject):
@@ -132,7 +116,7 @@ class CardsList(UniqueObject):
     def __init__(self,
                  name: str,
                  unique_id: int = None,
-                 cards: List[Card] = None):
+                 cards: List[int] = None):
         """
 
         :param name: Name of the list
@@ -156,7 +140,7 @@ class Board(UniqueObject):
     def __init__(self,
                  name: str,
                  unique_id: int = None,
-                 lists: List[CardsList] = None):
+                 lists: List[int] = None):
         """
 
         :param name: Name of the list

@@ -1,22 +1,16 @@
 from collections import namedtuple
+from threading import Thread
+
 from beb_lib import (IProviderSubscriber,
                      IProvider,
-                     REQUEST_BASE_FIELDS, BaseError)
-from .storage.storage_provider import StorageProvider
+                     BaseError)
 
-BoardDataRequest = namedtuple('BoardDataRequest', REQUEST_BASE_FIELDS + ['id', 'name', 'user'])
-ListDataRequest = namedtuple('ListDataRequest', REQUEST_BASE_FIELDS + ['id', 'name', 'user'])
-CardDataRequest = namedtuple('CardDataRequest', REQUEST_BASE_FIELDS + ['id',
-                                                                       'name',
-                                                                       'user',
-                                                                       'description',
-                                                                       'expiration_date',
-                                                                       'priority',
-                                                                       'parent',
-                                                                       'children',
-                                                                       'tags',
-                                                                       'comments',
-                                                                       'list'])
+from beb_lib.storage import (StorageProvider,
+                             BoardDataRequest,
+                             CardDataRequest,
+                             ListDataRequest,
+                             AddAccessRightRequest,
+                             RemoveAccessRightRequest)
 
 
 class Model(IProvider):
@@ -42,14 +36,30 @@ class Model(IProvider):
         :param request: Request DTO to process
         :param subscriber: Object of IProviderSubscriber-compliant class that is mean to process the respond to request
         """
-        provider: IProvider = None
 
-        if type(request).__name__ == BoardDataRequest.__name__ or \
-                type(request).__name__ == ListDataRequest.__name__ or \
-                type(request).__name__ == CardDataRequest.__name__:
-            provider = self.storage_provider
-
-        provider.execute(request, subscriber)
+        t = Thread(target=self._async_execute, args=(request, subscriber,))
+        t.start()
 
     def sync_execute(self, request: namedtuple) -> (namedtuple, BaseError):
-        pass
+        self._get_provider(request).sync_execute(request)
+
+    def _get_provider(self, request: namedtuple) -> IProvider:
+        provider: IProvider = None
+
+        request_name = type(request).__name__
+
+        if request_name == BoardDataRequest.__name__ or \
+                request_name == ListDataRequest.__name__ or \
+                request_name == CardDataRequest.__name__ or \
+                request_name == AddAccessRightRequest.__name__ or \
+                request_name == RemoveAccessRightRequest.__name__:
+            provider = self.storage_provider
+
+        return provider
+
+    def _async_execute(self, request: namedtuple, subscriber: IProviderSubscriber = None) -> None:
+        provider: IProvider = self._get_provider(request)
+        provider.execute(request, subscriber)
+
+
+# if __name__ == '__main__': pass

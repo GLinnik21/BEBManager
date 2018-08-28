@@ -19,6 +19,15 @@ class App:
         self.user_provider.open()
         self.authorization_manager = AuthorizationManager(config.CONFIG_FILE)
 
+    def check_authorization(func):
+        def wrapper(self, *args, **kwargs):
+            if self.authorization_manager.get_current_user_id() is None:
+                print('Authorize first!')
+            else:
+                func(self, *args, **kwargs)
+
+        return wrapper
+
     def get_all_users(self) -> List[UserInstance]:
         request = UserDataRequest(request_id=random.randrange(1000000),
                                   id=None,
@@ -139,3 +148,7 @@ class App:
     def _print_users(users: List[UserInstance]) -> None:
         for user in users:
             print("UserID: {}   Name: {}".format(user.unique_id, user.name))
+
+    @check_authorization
+    def get_board(self, board_id: int):
+        print('Got board')

@@ -32,8 +32,16 @@ def main():
             app.print_all_users()
     elif args.object == 'card':
         pass
+    elif args.object == 'board':
+        if args.command == 'display':
+            if args.all:
+                pass
+            if args.current:
+                pass
+            if args.id is not None:
+                app.get_board(args.id)
 
 
 if __name__ == '__main__':
-    sys.argv = "beb user add Beb".split()
+    sys.argv = 'beb board display -i 1'.split()
     main()

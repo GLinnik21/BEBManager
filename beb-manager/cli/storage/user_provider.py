@@ -64,7 +64,8 @@ class UserProvider(IProvider, IStorageProviderProtocol):
             else:
                 query = User.select().where((User.id == request.id) | (User.username == request.name))
                 if query.count() == 0:
-                    return None, BaseError(code=UserProviderErrorCodes.USER_DOES_NOT_EXIST, description="User doesn't exist")
+                    return None, BaseError(code=UserProviderErrorCodes.USER_DOES_NOT_EXIST, description="User doesn't "
+                                                                                                        "exist")
             user_response = [create_user_from_orm(orm_user) for orm_user in query]
         elif request.request_type == RequestType.DELETE:
             User.delete().where(User.id == request.id).execute()

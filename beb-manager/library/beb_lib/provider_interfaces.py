@@ -11,6 +11,7 @@ class RequestType(Enum):
 
 
 REQUEST_BASE_FIELDS = ['request_id', 'request_type']
+REQUEST_ACCESS_FIELDS = REQUEST_BASE_FIELDS + ['request_user_id']
 RESPONSE_BASE_FIELDS = ['request_id']
 
 

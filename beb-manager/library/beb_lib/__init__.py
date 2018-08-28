@@ -1,7 +1,6 @@
 from .domain_entities import (UniqueObject,
                               Tag,
                               Priority,
-                              Comment,
                               AccessType,
                               Card,
                               CardsList,
@@ -10,10 +9,8 @@ from .provider_interfaces import (IProvider,
                                   IProviderSubscriber,
                                   RequestType,
                                   REQUEST_BASE_FIELDS,
+                                  REQUEST_ACCESS_FIELDS,
                                   RESPONSE_BASE_FIELDS,
                                   BaseError)
-from .model import (Model,
-                    BoardDataRequest,
-                    CardDataRequest,
-                    ListDataRequest)
+from .model import Model
 from .storage import *
