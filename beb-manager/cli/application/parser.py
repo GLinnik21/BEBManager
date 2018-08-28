@@ -131,7 +131,8 @@ class CLIParser:
 
         parser_display_board_group.add_argument('-c', '--current', help='display current board', action='store_true')
         parser_display_board_group.add_argument('-a', '--all', help='display all boards', action='store_true')
-        parser_display_board_group.add_argument('-i', '--id', type=int, help='display particular board')
+        parser_display_board_group.add_argument('-i', '--id', type=int, help='display board with the particular id')
+        parser_display_board_group.add_argument('-n', '--name', help='display board with the particular name')
 
         parser_add_board = board_subparsers.add_parser('add', description='Add board', help='add board')
         parser_add_board.add_argument('name', help='name of the board')

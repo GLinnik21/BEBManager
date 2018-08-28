@@ -1,8 +1,6 @@
 import configparser
 from typing import Optional
 
-from storage import UserInstance
-
 _LOGGED_USER_KEY: str = 'LoggedUser'
 
 
@@ -12,8 +10,8 @@ class AuthorizationManager:
         self.config_file = config_file
         self.config_parser = configparser.ConfigParser()
 
-    def login_user(self, user: UserInstance) -> None:
-        self.config_parser[_LOGGED_USER_KEY] = {'unique_id': user.unique_id}
+    def login_user(self, user_id: int) -> None:
+        self.config_parser[_LOGGED_USER_KEY] = {'unique_id': user_id}
         with open(self.config_file, 'w') as configfile:
             self.config_parser.write(configfile)
 

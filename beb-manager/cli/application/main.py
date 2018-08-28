@@ -35,13 +35,17 @@ def main():
     elif args.object == 'board':
         if args.command == 'display':
             if args.all:
-                pass
+                app.print_all_boards()
             if args.current:
-                pass
+                app.print_current_board()
             if args.id is not None:
-                app.get_board(args.id)
+                app.print_board_by_id(args.id)
+            if args.name is not None:
+                app.print_board_by_name(args.name)
+        if args.command == 'add':
+            app.add_board(args.name)
 
 
 if __name__ == '__main__':
-    sys.argv = 'beb board display -i 1'.split()
+    sys.argv = 'beb-manager board display -n New'.split()
     main()

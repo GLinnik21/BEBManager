@@ -41,7 +41,7 @@ class Model(IProvider):
         t.start()
 
     def sync_execute(self, request: namedtuple) -> (namedtuple, BaseError):
-        self._get_provider(request).sync_execute(request)
+        return self._get_provider(request).sync_execute(request)
 
     def _get_provider(self, request: namedtuple) -> IProvider:
         provider: IProvider = None

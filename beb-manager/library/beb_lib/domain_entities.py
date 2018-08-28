@@ -15,7 +15,7 @@ class UniqueObject:
         :param name: Name
         :param unique_id: Unique identifier of object. If None is passed a new UUID would be generated
         """
-        self.unique_identifier = unique_id
+        self.unique_id = unique_id
         self.name = name
 
 

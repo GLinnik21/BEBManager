@@ -11,7 +11,7 @@ from beb_lib import (IProviderSubscriber,
                      RequestType,
                      AccessType,
                      Board,
-                     RESPONSE_BASE_FIELDS, REQUEST_BASE_FIELDS)
+                     RESPONSE_BASE_FIELDS)
 
 from .access_validator import (check_access_to_board,
                                check_access_to_list,
@@ -29,31 +29,13 @@ from .storage_models import (BoardModel,
                              BoardUserAccess,
                              DATABASE_PROXY)
 
+from .storage_provider_requests import (BoardDataRequest,
+                                        AddAccessRightRequest,
+                                        RemoveAccessRightRequest)
+
 from .storage_provider_protocol import IStorageProviderProtocol
 
 BoardDataResponse = namedtuple('BoardDataResponse', RESPONSE_BASE_FIELDS + ['boards'])
-
-BoardDataRequest = namedtuple('BoardDataRequest', REQUEST_BASE_FIELDS + ['id', 'name'])
-ListDataRequest = namedtuple('ListDataRequest', REQUEST_BASE_FIELDS + ['id', 'name'])
-CardDataRequest = namedtuple('CardDataRequest', REQUEST_BASE_FIELDS + ['id',
-                                                                       'name',
-                                                                       'user',
-                                                                       'description',
-                                                                       'expiration_date',
-                                                                       'priority',
-                                                                       'parent',
-                                                                       'children',
-                                                                       'tags',
-                                                                       'comments',
-                                                                       'list'])
-AddAccessRightRequest = namedtuple('AddAccessRightRequest', REQUEST_BASE_FIELDS + ['object_type',
-                                                                                   'object_id',
-                                                                                   'user_id',
-                                                                                   'access_type'])
-RemoveAccessRightRequest = namedtuple('RemoveAccessRightRequest', REQUEST_BASE_FIELDS + ['object_type',
-                                                                                         'object_id',
-                                                                                         'user_id',
-                                                                                         'access_type'])
 
 
 @unique
@@ -110,7 +92,10 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
         if request.request_type == RequestType.WRITE:
             board = None
             try:
-                board = BoardModel.get(BoardModel.id == request.id)
+                if request.id is not None:
+                    board = BoardModel.get(BoardModel.id == request.id)
+                elif request.name is not None:
+                    board = BoardModel.get(BoardModel.name == request.name)
             except DoesNotExist:
                 pass
 
@@ -131,7 +116,7 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
                 query = (BoardModel
                          .select()
                          .join(BoardUserAccess)
-                         .where((BoardUserAccess.user_id == 1) &
+                         .where((BoardUserAccess.user_id == request.request_user_id) &
                                 ((BoardUserAccess.access_type == AccessType.READ.value |
                                   BoardUserAccess.access_type == AccessType.READ_WRITE.value))))
                 for board in query:
@@ -139,9 +124,13 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
                     board_response += [Board(board.name, board.id, lists)]
             else:
                 try:
-                    board = BoardModel.get(BoardModel.id == request.id)
-                    lists = [list_id for list_id in board.card_lists]
-                    board_response = [Board(board.name, board.id, lists)]
+                    board = BoardModel.get((BoardModel.id == request.id) | (BoardModel.name == request.name))
+                    if bool(check_access_to_board(board, user_id) & AccessType.READ):
+                        lists = [list_id for list_id in board.card_lists]
+                        board_response = [Board(board.name, board.id, lists)]
+                    else:
+                        return None, BaseError(code=StorageProviderErrors.ACCESS_DENIED,
+                                               description="This user can't read this board")
                 except DoesNotExist:
                     return None, BaseError(code=StorageProviderErrors.BOARD_DOES_NOT_EXIST,
                                            description="Board doesn't exist")
@@ -155,13 +144,13 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
                 return None, BaseError(code=StorageProviderErrors.BOARD_DOES_NOT_EXIST,
                                        description="Board doesn't exist")
 
-        return BoardDataResponse(users=board_response, request_id=request.request_id), None
+        return BoardDataResponse(boards=board_response, request_id=request.request_id), None
 
     @staticmethod
     def _database_call(request: namedtuple) -> (namedtuple, BaseError):
         if type(request).__name__ == BoardDataRequest.__name__:
             return StorageProvider._process_board_call(request)
         elif type(request).__name__ == AddAccessRightRequest.__name__:
-            add_right(request)
+            add_right(request.object_type, request.object_id, request.user_id, request.access_type)
         elif type(request).__name__ == RemoveAccessRightRequest.__name__:
-            remove_right(request)
+            remove_right(request.object_type, request.object_id, request.user_id, request.access_type)

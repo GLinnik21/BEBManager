@@ -17,7 +17,7 @@ from .storage_models import (BaseModel,
 
 
 def _create_access_type(query: ModelSelect):
-    if query.count == 0:
+    if query.count() == 0:
         return AccessType.READ_WRITE
     else:
         return AccessType(query[0].access_type)

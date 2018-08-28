@@ -1,9 +1,4 @@
-from .storage_provider import (StorageProvider,
-                               BoardDataRequest,
-                               CardDataRequest,
-                               ListDataRequest,
-                               AddAccessRightRequest,
-                               RemoveAccessRightRequest)
+from .storage_provider import StorageProvider, BoardDataResponse
 from .storage_provider_protocol import IStorageProviderProtocol
 from .storage_models import (BaseModel,
                              BaseNameModel,
@@ -16,3 +11,8 @@ from .storage_models import (BaseModel,
                              CardListUserAccess,
                              BoardUserAccess,
                              DATABASE_PROXY)
+from .storage_provider_requests import (BoardDataRequest,
+                                        CardDataRequest,
+                                        ListDataRequest,
+                                        AddAccessRightRequest,
+                                        RemoveAccessRightRequest)
