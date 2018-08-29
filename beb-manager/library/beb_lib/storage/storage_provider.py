@@ -113,15 +113,11 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
         elif request.request_type == RequestType.READ:
             if request.id is None and request.name is None:
                 board_response = []
-                query = (BoardModel
-                         .select()
-                         .join(BoardUserAccess)
-                         .where((BoardUserAccess.user_id == request.request_user_id) &
-                                ((BoardUserAccess.access_type == AccessType.READ.value |
-                                  BoardUserAccess.access_type == AccessType.READ_WRITE.value))))
+                query = BoardModel.select()
                 for board in query:
-                    lists = [list_id for list_id in board.card_lists]
-                    board_response += [Board(board.name, board.id, lists)]
+                    if bool(check_access_to_board(board, user_id) & AccessType.READ):
+                        lists = [list_id for list_id in board.card_lists]
+                        board_response += [Board(board.name, board.id, lists)]
             else:
                 try:
                     board = BoardModel.get((BoardModel.id == request.id) | (BoardModel.name == request.name))
@@ -136,10 +132,14 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
                                            description="Board doesn't exist")
         elif request.request_type == RequestType.DELETE:
             try:
-                board = BoardModel.get(BoardModel.id == request.id)
+                board = BoardModel.get((BoardModel.id == request.id) | (BoardModel.name == request.name))
                 access = check_access_to_board(board, user_id)
                 if bool(access & AccessType.WRITE):
                     BoardModel.delete().where(BoardModel.id == request.id).execute()
+                    BoardUserAccess.delete().where(BoardUserAccess.board_id == request.id).execute()
+                else:
+                    return None, BaseError(code=StorageProviderErrors.ACCESS_DENIED,
+                                           description="This user can't delete this board")
             except DoesNotExist:
                 return None, BaseError(code=StorageProviderErrors.BOARD_DOES_NOT_EXIST,
                                        description="Board doesn't exist")
@@ -152,5 +152,7 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
             return StorageProvider._process_board_call(request)
         elif type(request).__name__ == AddAccessRightRequest.__name__:
             add_right(request.object_type, request.object_id, request.user_id, request.access_type)
+            return None, None
         elif type(request).__name__ == RemoveAccessRightRequest.__name__:
             remove_right(request.object_type, request.object_id, request.user_id, request.access_type)
+            return None, None

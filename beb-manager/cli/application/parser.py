@@ -138,13 +138,20 @@ class CLIParser:
         parser_add_board.add_argument('name', help='name of the board')
 
         parser_delete_board = board_subparsers.add_parser('delete', description='Delete board', help='delete board')
-        parser_delete_board.add_argument('id', help='the id of the board')
+        parser_delete_board.add_argument('id', type=int, help='the id of the board')
 
         parser_edit_board = board_subparsers.add_parser('edit', description='Edit board', help='edit board')
-        parser_edit_board.add_argument('id', help='the id of the board')
-        parser_edit_board.add_argument('name', help='name of the board')
+        parser_edit_board.add_argument('id', help='the id of the board to edit')
+        parser_edit_board.add_argument('-n', '--name', help='the new name of the board')
 
         parser_delete_board = board_subparsers.add_parser('switch',
                                                           description='Switch to board', help='switch to board')
-        parser_delete_board.add_argument('id', help='the id of the board')
+        parser_delete_board.add_argument('id', type=int, help='the id of the board')
+
+        parser_access_board = board_subparsers.add_parser('access',
+                                                          description='Configure access to board',
+                                                          help='configure access to board')
+        parser_access_board.add_argument('-bid', '--board_id', help='the id of the board').required = True
+        parser_access_board.add_argument('-uid', '--user_id', help='the id of the user').required = True
+        parser_access_board.add_argument('mode', metavar="\033[4mmode\033[0m", help='access mode (+rw, ~rw)')
 

@@ -54,25 +54,28 @@ def _get_orm_model(object_type: object, object_id: int, user_id: int) -> Optiona
     class_name = object_type.__name__
 
     try:
-        orm_model = None
         if class_name == Board.__name__:
-            orm_model = BoardUserAccess.get(
+            return BoardUserAccess.get(
                 (BoardUserAccess.board == object_id) & (BoardUserAccess.user_id == user_id))
         elif class_name == CardsList.__name__:
-            orm_model = CardListUserAccess.get(
+            return CardListUserAccess.get(
                 (CardListUserAccess.card_list == object_id) & (CardListUserAccess.user_id == user_id))
         elif class_name == Card.__name__:
-            orm_model = CardUserAccess.get(
+            return CardUserAccess.get(
                 (CardUserAccess.card == object_id) & (CardUserAccess.user_id == user_id))
-        return orm_model
     except DoesNotExist:
-        return None
+        if class_name == Board.__name__:
+            return BoardUserAccess.create(board=object_id, user_id=user_id, access_type=0)
+        elif class_name == CardsList.__name__:
+            return CardListUserAccess.create(card_list=object_id, user_id=user_id, access_type=0)
+        elif class_name == Card.__name__:
+            return CardUserAccess.create(card=object_id,user_id=user_id, access_type=0)
 
 
 def add_right(object_type: object, object_id: int, user_id: int, access_type: AccessType) -> None:
     """
 
-    :param object_type: Pass here ORM class from storage_models model
+    :param object_type: Pass here class from domain_entities
     :param object_id: The Id of the ORM object that access_type should be added
     :param user_id: The id of the user whose access level is needed to be configured
     :param access_type: Types from AccessType enum (eg. READ, WRITE, READ_WRITE) that would be added to access_type
@@ -81,14 +84,15 @@ def add_right(object_type: object, object_id: int, user_id: int, access_type: Ac
     orm_model = _get_orm_model(object_type, object_id, user_id)
 
     if orm_model:
-        orm_model.access_type |= access_type
+        a_type = AccessType(orm_model.access_type)
+        orm_model.access_type = (a_type | access_type).value
         orm_model.save()
 
 
 def remove_right(object_type: object, object_id: int, user_id: int, access_type: AccessType) -> None:
     """
 
-        :param object_type: Pass here ORM class from storage_models model
+        :param object_type: Pass here class from domain_entities
         :param object_id: The id of the ORM object that access_type should be removed
         :param user_id: The id of the user whose access level is needed to be configured
         :param access_type: Types from AccessType enum (eg. READ, WRITE, READ_WRITE) that would be removed from
@@ -97,6 +101,7 @@ def remove_right(object_type: object, object_id: int, user_id: int, access_type:
     orm_model = _get_orm_model(object_type, object_id, user_id)
 
     if orm_model:
-        orm_model.access_type |= access_type
-        orm_model.access_type ^= access_type
+        a_type = AccessType(orm_model.access_type)
+        a_type |= access_type
+        orm_model.access_type = (a_type ^ access_type).value
         orm_model.save()

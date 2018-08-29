@@ -36,16 +36,28 @@ def main():
         if args.command == 'display':
             if args.all:
                 app.print_all_boards()
-            if args.current:
+            elif args.current:
                 app.print_current_board()
-            if args.id is not None:
-                app.print_board_by_id(args.id)
-            if args.name is not None:
-                app.print_board_by_name(args.name)
-        if args.command == 'add':
+            else:
+                app.print_board(args.id, args.name)
+        elif args.command == 'add':
             app.add_board(args.name)
+        elif args.command == 'delete':
+            app.delete_board(args.id)
+        elif args.command == 'edit':
+            app.edit_board(args.id, args.name)
+        elif args.command == 'switch':
+            app.switch_board(args.id)
+        elif args.command == 'access':
+            mode = args.mode
+            if mode[0] == "+":
+                app.add_rights(mode[1:], args.user_id, args.board_id)
+            elif mode[0] == "~":
+                app.remove_rights(mode[1:], args.user_id, args.board_id)
+            else:
+                print("Invalid \033[4mmode\033[0m format")
+                exit(2)
 
 
 if __name__ == '__main__':
-    sys.argv = 'beb-manager board display -n New'.split()
     main()
