@@ -1,6 +1,6 @@
 from typing import Optional
-
-from peewee import ModelSelect, DoesNotExist
+import peewee
+from peewee import DoesNotExist
 
 from beb_lib import (AccessType,
                      Board,
@@ -16,7 +16,7 @@ from .models import (BaseModel,
                      CardUserAccess)
 
 
-def _create_access_type(query: ModelSelect):
+def _create_access_type(query: peewee.ModelSelect):
     if query.count() == 0:
         return AccessType.READ_WRITE
     else:
