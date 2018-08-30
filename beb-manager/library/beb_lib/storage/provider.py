@@ -1,5 +1,6 @@
 from collections import namedtuple
 import enum
+from typing import List
 
 from peewee import (SqliteDatabase,
                     DoesNotExist)
@@ -9,7 +10,8 @@ from beb_lib import (IProvider,
                      RequestType,
                      AccessType,
                      Board,
-                     RESPONSE_BASE_FIELDS)
+                     RESPONSE_BASE_FIELDS,
+                     CARD_LIST_DEFAULTS)
 
 from .access_validator import (check_access_to_board,
                                check_access_to_list,
@@ -81,6 +83,30 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
             return None, None
 
     @staticmethod
+    def _create_board_with_defaults(board_name: str, user_id: int) -> List[Board]:
+        board = BoardModel.create(name=board_name)
+        BoardUserAccess.create(user_id=user_id, board=board)
+        board_response = [Board(board.name, board.id)]
+
+        for name in CARD_LIST_DEFAULTS:
+            CardListModel.create(name=name, board=board)
+
+        return board_response
+
+    @staticmethod
+    def _delete_card(card: CardModel):
+        CardUserAccess.delete().where(CardUserAccess.card == card).execute()
+        TagCard.delete().where(TagCard.card == card).execute()
+        card.delete().execute()
+
+    @staticmethod
+    def _delete_list(card_list: CardListModel):
+        CardListUserAccess.delete().where(CardListUserAccess.card_list == card_list)
+        for card in card_list.cards:
+            StorageProvider._delete_card(card)
+        card_list.delete().execute()
+
+    @staticmethod
     def _process_board_call(request: BoardDataRequest) -> (namedtuple, BaseError):
         user_id = request.request_user_id
         board_response = None
@@ -96,9 +122,7 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
                 pass
 
             if board is None:
-                board = BoardModel.create(name=request.name)
-                BoardUserAccess.create(user_id=user_id, board=board)
-                board_response = [Board(board.name, board.id)]
+                board_response = StorageProvider._create_board_with_defaults(request.name, user_id)
             elif bool(check_access_to_board(board, user_id) & AccessType.WRITE):
                 board.name = request.name
                 board.save()
@@ -131,8 +155,10 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
                 board = BoardModel.get((BoardModel.id == request.id) | (BoardModel.name == request.name))
                 access = check_access_to_board(board, user_id)
                 if bool(access & AccessType.WRITE):
+                    BoardUserAccess.delete().where(BoardUserAccess.board == board).execute()
+                    for card_list in board.card_lists:
+                        StorageProvider._delete_list(card_list)
                     BoardModel.delete().where(BoardModel.id == request.id).execute()
-                    BoardUserAccess.delete().where(BoardUserAccess.board_id == request.id).execute()
                 else:
                     return None, BaseError(code=StorageProviderErrors.ACCESS_DENIED,
                                            description="This user can't delete this board")

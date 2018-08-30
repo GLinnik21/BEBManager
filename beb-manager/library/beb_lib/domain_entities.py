@@ -1,5 +1,6 @@
 from datetime import datetime
-from enum import IntEnum, Flag, unique, auto
+import enum
+from enum import Enum
 from typing import List
 
 
@@ -38,22 +39,22 @@ class Tag(UniqueObject):
         self.color = color
 
 
-class Priority(IntEnum):
+class Priority(enum.IntEnum):
     LOW = 1
     MEDIUM = 50
     HIGH = 100
 
 
-@unique
-class AccessType(Flag):
+@enum.unique
+class AccessType(enum.Flag):
     """
     Members of this class could be combined using the bitwise operators (&, |, ^)
     Used to determine what type of access user may have to board.
     Use AccessType Flag enum combinations (e.g. AccessType.READ | AccessType.WRITE) for this.
     Pass AccessType.NONE or AccessType.READ & AccessType.WRITE to ban access for user to board
     """
-    READ = auto()
-    WRITE = auto()
+    READ = enum.auto()
+    WRITE = enum.auto()
     READ_WRITE = READ | WRITE
     NONE = READ & WRITE
 
@@ -105,6 +106,11 @@ class Card(UniqueObject):
     @property
     def tags(self):
         return self._tags
+
+
+CARD_LIST_DEFAULTS = ['To Do',
+                      'In Progress',
+                      'Done']
 
 
 class CardsList(UniqueObject):

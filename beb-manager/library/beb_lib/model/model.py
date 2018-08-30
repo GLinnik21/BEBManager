@@ -2,7 +2,7 @@ import random
 from typing import List
 
 from beb_lib import Board, RequestType, AccessType
-from .exceptions import BoardDoesNotExistError, AccessDeniedError, Error
+from beb_lib.model.exceptions import BoardDoesNotExistError, AccessDeniedError, Error
 from beb_lib.storage import (StorageProvider,
                              BoardDataRequest,
                              CardDataRequest,

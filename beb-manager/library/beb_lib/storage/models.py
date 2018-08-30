@@ -40,7 +40,6 @@ class CardListModel(BaseNameModel):
 
 
 class TagModel(BaseNameModel):
-    user_id = IntegerField(null=True)
     color = IntegerField(null=True)
 
 
@@ -51,6 +50,7 @@ class CardModel(BaseNameModel):
     user_id = IntegerField(null=True)
     assignee_id = IntegerField(null=True)
     parent_task_id = IntegerField(null=True)
+    list = ForeignKeyField(CardListModel, backref='cards', null=True)
     tag = ForeignKeyField(TagModel, backref='cards', null=True)
     created = DateTimeField(default=datetime.datetime.now)
     last_modified = DateTimeField(default=datetime.datetime.now)

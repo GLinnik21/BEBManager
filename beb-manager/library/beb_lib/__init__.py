@@ -3,6 +3,7 @@ from .domain_entities import (UniqueObject,
                               Priority,
                               AccessType,
                               Card,
+                              CARD_LIST_DEFAULTS,
                               CardsList,
                               Board)
 from .provider_interfaces import (IProvider,
