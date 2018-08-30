@@ -1,17 +1,13 @@
 import random
 from typing import List, Optional
 
-from beb_lib.storage.storage_provider import StorageProviderErrors
-
 from application import config, AuthorizationManager, WorkingBoardManager
-from beb_lib import (StorageProvider,
-                     BoardDataRequest,
-                     RequestType,
-                     Model,
+import beb_lib
+from beb_lib import (Model,
                      BaseError,
                      Board,
-                     AddAccessRightRequest,
-                     RemoveAccessRightRequest, AccessType)
+                     AccessType,
+                     RequestType)
 from storage import (UserProvider,
                      UserDataRequest,
                      UserInstance)
@@ -32,7 +28,7 @@ def check_authorization(func):
 class App:
 
     def __init__(self):
-        self.lib_model = Model(StorageProvider(config.LIB_DATABASE))
+        self.lib_model = Model(config.LIB_DATABASE)
         self.user_provider = UserProvider(config.APP_DATABASE)
         self.user_provider.open()
         self.authorization_manager = AuthorizationManager(config.CONFIG_FILE)
@@ -43,7 +39,7 @@ class App:
                                   id=None,
                                   name=None,
                                   request_type=RequestType.READ)
-        result = self.user_provider.sync_execute(request)[0]
+        result = self.user_provider.execute(request)[0]
         users = sorted(result.users, key=lambda user: user.unique_id)
         return users
 
@@ -52,7 +48,7 @@ class App:
                                   id=user_id,
                                   name=name,
                                   request_type=RequestType.READ)
-        result = self.user_provider.sync_execute(request)
+        result = self.user_provider.execute(request)
 
         error: Optional[BaseError] = result[1]
 
@@ -73,7 +69,7 @@ class App:
                                   id=None,
                                   name=name,
                                   request_type=RequestType.READ)
-        result = self.user_provider.sync_execute(request)
+        result = self.user_provider.execute(request)
 
         if result[1] is not None:
             print(result[1].description)
@@ -87,7 +83,7 @@ class App:
                                   id=None,
                                   name=name,
                                   request_type=RequestType.WRITE)
-        result = self.user_provider.sync_execute(request)
+        result = self.user_provider.execute(request)
 
         if result[1] is not None:
             print(result[1].description)
@@ -160,113 +156,79 @@ class App:
 
     @check_authorization
     def print_all_boards(self):
-        request = BoardDataRequest(request_id=random.randrange(1000000),
-                                   request_user_id=self.authorization_manager.get_current_user_id(),
-                                   id=None,
-                                   name=None,
-                                   request_type=RequestType.READ)
-        result = self.lib_model.sync_execute(request)
-        response, error = result
+        try:
+            boards = self.lib_model.board_read(request_user_id=self.authorization_manager.get_current_user_id())
+            if len(boards) > 0:
+                App._print_boards(boards)
+            else:
+                print("There are no boards created.")
+                quit()
+        except beb_lib.Error as error:
+            print(error)
+            quit(1)
 
-        if error is not None:
-            print(error.description)
-            quit(error.code)
-
-        if len(response.boards) > 0:
-            App._print_boards(response.boards)
-        else:
-            print("There are no boards created.")
-            quit()
-
+    @check_authorization
     def get_board(self, board_id: Optional[int], board_name: Optional[str]) -> Board:
-        request = BoardDataRequest(request_id=random.randrange(1000000),
-                                   request_user_id=self.authorization_manager.get_current_user_id(),
-                                   id=board_id,
-                                   name=board_name,
-                                   request_type=RequestType.READ)
-        response, error = self.lib_model.sync_execute(request)
-
-        if error is not None:
-            print(error.description)
-            quit(error.code)
-
-        return response.boards[0]
+        try:
+            boards = self.lib_model.board_read(board_id, board_name, self.authorization_manager.get_current_user_id())
+            return boards[0]
+        except beb_lib.Error as error:
+            print(error)
+            quit(1)
 
     @check_authorization
     def add_board(self, board_name: str) -> None:
-        request = BoardDataRequest(request_id=random.randrange(1000000),
-                                   request_user_id=self.authorization_manager.get_current_user_id(),
-                                   id=None,
-                                   name=board_name,
-                                   request_type=RequestType.READ)
-        response, error = self.lib_model.sync_execute(request)
 
-        if response is not None:
+        boards = None
+
+        try:
+            boards = self.lib_model.board_read(board_name=board_name,
+                                               request_user_id=self.authorization_manager.get_current_user_id())
+
+        except beb_lib.AccessDeniedError:
+            print("This user can't create board with such name")
+            quit(1)
+        except beb_lib.BoardDoesNotExistError:
+            pass
+        except beb_lib.Error as error:
+            print(error)
+            quit(1)
+
+        if boards is not None:
             print("Board with this name already exists")
             quit(1)
-        elif error is not None:
-            if error.code == StorageProviderErrors.ACCESS_DENIED:
-                print("This user can't create board with such name")
-                quit(1)
-            elif error.code == StorageProviderErrors.BOARD_DOES_NOT_EXIST:
-                pass
-            else:
-                print(error.description)
-                quit(error.code)
 
-        request = BoardDataRequest(request_id=random.randrange(1000000),
-                                   request_user_id=self.authorization_manager.get_current_user_id(),
-                                   id=None,
-                                   name=board_name,
-                                   request_type=RequestType.WRITE)
-        response, error = self.lib_model.sync_execute(request)
-
-        if error is not None:
-            print(error.description)
-            quit(error.code)
+        try:
+            self.lib_model.board_write(board_name=board_name,
+                                       request_user_id=self.authorization_manager.get_current_user_id())
+        except beb_lib.Error as error:
+            print(error)
+            quit(1)
 
     @check_authorization
     def delete_board(self, board_id: int) -> None:
-        request = BoardDataRequest(request_id=random.randrange(1000000),
-                                   request_user_id=self.authorization_manager.get_current_user_id(),
-                                   id=board_id,
-                                   name=None,
-                                   request_type=RequestType.DELETE)
-        response, error = self.lib_model.sync_execute(request)
-
-        if error is not None:
-            print(error.description)
-            quit(error.code)
+        try:
+            self.lib_model.board_delete(board_id, None, self.authorization_manager.get_current_user_id())
+        except beb_lib.Error as error:
+            print(error)
+            quit(1)
 
     @check_authorization
     def edit_board(self, board_id: int, new_name: str) -> None:
         board = self.get_board(board_id, None)
-
-        request = BoardDataRequest(request_id=random.randrange(1000000),
-                                   request_user_id=self.authorization_manager.get_current_user_id(),
-                                   id=board.unique_id,
-                                   name=new_name,
-                                   request_type=RequestType.WRITE)
-
-        response, error = self.lib_model.sync_execute(request)
-
-        if error is not None:
-            print(error.description)
-            quit(error.code)
+        try:
+            self.lib_model.board_write(board.unique_id, new_name, self.authorization_manager.get_current_user_id())
+        except beb_lib.Error as error:
+            print(error)
+            quit(1)
 
     @check_authorization
     def switch_board(self, board_id: int):
-        request = BoardDataRequest(request_id=random.randrange(1000000),
-                                   request_user_id=self.authorization_manager.get_current_user_id(),
-                                   id=board_id,
-                                   name=None,
-                                   request_type=RequestType.READ)
-
-        response, error = self.lib_model.sync_execute(request)
-
-        if error is not None:
-            print(error.description)
-            quit(error.code)
+        try:
+            self.lib_model.board_read(board_id, None, self.authorization_manager.get_current_user_id())
+        except beb_lib.Error as error:
+            print(error)
+            quit(1)
 
         self.working_board_manager.switch_to_board(board_id)
 
@@ -278,13 +240,7 @@ class App:
         if 'r' in permissions:
             access_type |= AccessType.READ
 
-        request = AddAccessRightRequest(request_id=random.randrange(1000000),
-                                        request_type=None,
-                                        object_id=board_id,
-                                        object_type=Board,
-                                        user_id=user_id,
-                                        access_type=access_type)
-        self.lib_model.sync_execute(request)
+        self.lib_model.add_right(board_id, Board, user_id, access_type)
 
     def remove_rights(self, permissions: str, user_id: int, board_id: int):
         access_type = AccessType.NONE
@@ -294,10 +250,4 @@ class App:
         if 'r' in permissions:
             access_type |= AccessType.READ
 
-        request = RemoveAccessRightRequest(request_id=random.randrange(1000000),
-                                           request_type=None,
-                                           object_id=board_id,
-                                           object_type=Board,
-                                           user_id=user_id,
-                                           access_type=access_type)
-        self.lib_model.sync_execute(request)
+        self.lib_model.remove_right(board_id, Board, user_id, access_type)

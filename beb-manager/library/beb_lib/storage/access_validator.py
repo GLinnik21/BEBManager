@@ -7,13 +7,13 @@ from beb_lib import (AccessType,
                      CardsList,
                      Card)
 
-from .storage_models import (BaseModel,
-                             BoardModel,
-                             CardListModel,
-                             BoardUserAccess,
-                             CardListUserAccess,
-                             CardModel,
-                             CardUserAccess)
+from .models import (BaseModel,
+                     BoardModel,
+                     CardListModel,
+                     BoardUserAccess,
+                     CardListUserAccess,
+                     CardModel,
+                     CardUserAccess)
 
 
 def _create_access_type(query: ModelSelect):

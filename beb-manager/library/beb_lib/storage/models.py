@@ -9,7 +9,7 @@ from peewee import (
     DateTimeField
 )
 
-from ..domain_entities import (
+from beb_lib.domain_entities import (
     Priority,
     AccessType
 )

@@ -1,12 +1,10 @@
 from collections import namedtuple
-from enum import IntEnum, auto, unique
-from threading import Thread
+import enum
 
 from peewee import (SqliteDatabase,
                     DoesNotExist)
 
-from beb_lib import (IProviderSubscriber,
-                     IProvider,
+from beb_lib import (IProvider,
                      BaseError,
                      RequestType,
                      AccessType,
@@ -19,29 +17,29 @@ from .access_validator import (check_access_to_board,
                                add_right,
                                remove_right)
 
-from .storage_models import (BoardModel,
-                             CardListModel,
-                             TagModel,
-                             CardModel,
-                             TagCard,
-                             CardUserAccess,
-                             CardListUserAccess,
-                             BoardUserAccess,
-                             DATABASE_PROXY)
+from .models import (BoardModel,
+                     CardListModel,
+                     TagModel,
+                     CardModel,
+                     TagCard,
+                     CardUserAccess,
+                     CardListUserAccess,
+                     BoardUserAccess,
+                     DATABASE_PROXY)
 
-from .storage_provider_requests import (BoardDataRequest,
-                                        AddAccessRightRequest,
-                                        RemoveAccessRightRequest)
+from .provider_requests import (BoardDataRequest,
+                                AddAccessRightRequest,
+                                RemoveAccessRightRequest)
 
-from .storage_provider_protocol import IStorageProviderProtocol
+from .provider_protocol import IStorageProviderProtocol
 
 BoardDataResponse = namedtuple('BoardDataResponse', RESPONSE_BASE_FIELDS + ['boards'])
 
 
-@unique
-class StorageProviderErrors(IntEnum):
-    ACCESS_DENIED = auto()
-    BOARD_DOES_NOT_EXIST = auto()
+@enum.unique
+class StorageProviderErrors(enum.IntEnum):
+    ACCESS_DENIED = enum.auto()
+    BOARD_DOES_NOT_EXIST = enum.auto()
 
 
 class StorageProvider(IProvider, IStorageProviderProtocol):
@@ -72,17 +70,15 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
         self.database.close()
         self.is_connected = False
 
-    def execute(self, request: namedtuple, subscriber: IProviderSubscriber = None) -> None:
-        t = Thread(target=self._async_execute, args=(request, subscriber,))
-        t.start()
-
-    def sync_execute(self, request: namedtuple) -> (namedtuple, BaseError):
-        return self._database_call(request)
-
-    @staticmethod
-    def _async_execute(request: namedtuple, subscriber: IProviderSubscriber = None) -> None:
-        result = StorageProvider._database_call(request)
-        subscriber.process(result)
+    def execute(self, request: namedtuple) -> (namedtuple, BaseError):
+        if type(request).__name__ == BoardDataRequest.__name__:
+            return StorageProvider._process_board_call(request)
+        elif type(request).__name__ == AddAccessRightRequest.__name__:
+            add_right(request.object_type, request.object_id, request.user_id, request.access_type)
+            return None, None
+        elif type(request).__name__ == RemoveAccessRightRequest.__name__:
+            remove_right(request.object_type, request.object_id, request.user_id, request.access_type)
+            return None, None
 
     @staticmethod
     def _process_board_call(request: BoardDataRequest) -> (namedtuple, BaseError):
@@ -145,14 +141,3 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
                                        description="Board doesn't exist")
 
         return BoardDataResponse(boards=board_response, request_id=request.request_id), None
-
-    @staticmethod
-    def _database_call(request: namedtuple) -> (namedtuple, BaseError):
-        if type(request).__name__ == BoardDataRequest.__name__:
-            return StorageProvider._process_board_call(request)
-        elif type(request).__name__ == AddAccessRightRequest.__name__:
-            add_right(request.object_type, request.object_id, request.user_id, request.access_type)
-            return None, None
-        elif type(request).__name__ == RemoveAccessRightRequest.__name__:
-            remove_right(request.object_type, request.object_id, request.user_id, request.access_type)
-            return None, None

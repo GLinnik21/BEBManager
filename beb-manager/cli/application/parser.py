@@ -32,7 +32,7 @@ class CLIParser:
     #    user      Operate users. Users may own and have different access to cards, lists, etc.
 
     def _add_all_parsers(self):
-        self._add_card_parser()
+        # self._add_card_parser()
         self._add_user_parser()
         self._add_board_parser()
 

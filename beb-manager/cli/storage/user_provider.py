@@ -1,11 +1,9 @@
 from collections import namedtuple
-from threading import Thread
 from peewee import SqliteDatabase
 from enum import IntEnum, unique, auto
 
 from beb_lib import (IProvider,
                      IStorageProviderProtocol,
-                     IProviderSubscriber,
                      RequestType,
                      REQUEST_BASE_FIELDS,
                      RESPONSE_BASE_FIELDS,
@@ -44,11 +42,7 @@ class UserProvider(IProvider, IStorageProviderProtocol):
         self.database.close()
         self.is_connected = False
 
-    def execute(self, request: namedtuple, subscriber: IProviderSubscriber = None) -> None:
-        t = Thread(target=self._async_execute, args=(request, subscriber,))
-        t.start()
-
-    def sync_execute(self, request: namedtuple) -> (namedtuple, BaseError):
+    def execute(self, request: namedtuple) -> (namedtuple, BaseError):
         return self._database_call(request)
 
     @staticmethod
@@ -71,8 +65,3 @@ class UserProvider(IProvider, IStorageProviderProtocol):
             User.delete().where(User.id == request.id).execute()
 
         return UserDataResponse(users=user_response, request_id=request.request_id), None
-
-    @staticmethod
-    def _async_execute(request: namedtuple, subscriber: IProviderSubscriber = None) -> None:
-        result = UserProvider._database_call(request)
-        subscriber.process(result)
