@@ -41,10 +41,10 @@ def check_access_to_list(card_list: CardListModel, user_id: int) -> AccessType:
     return _create_access_type(query)
 
 
-def check_access_to_task(card: CardModel, user_id: int) -> AccessType:
+def check_access_to_card(card: CardModel, user_id: int) -> AccessType:
     query = (CardUserAccess
              .select()
-             .join(BoardModel)
+             .join(CardModel)
              .where((CardUserAccess.user_id == user_id) & (CardUserAccess.card == card)))
 
     return _create_access_type(query)

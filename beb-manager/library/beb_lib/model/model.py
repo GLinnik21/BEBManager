@@ -1,7 +1,7 @@
 import random
 from typing import List
 
-from beb_lib import Board, RequestType, AccessType, CardsList
+from beb_lib import Board, RequestType, AccessType, CardsList, Card
 from beb_lib.model.exceptions import BoardDoesNotExistError, AccessDeniedError, Error
 from beb_lib.storage import (StorageProvider,
                              BoardDataRequest,
@@ -157,5 +157,25 @@ class Model:
             else:
                 raise Error("""Undefined DB exception! 
                 Code: {} Description: {}""".format(error.error, error.description))
+
+    def card_write(self, card: Card, list_id: int, request_user_id: int = None) -> Card:
+        request = CardDataRequest(request_id=random.randrange(1000000),
+                                  id=card.user_id,
+                                  request_user_id=request_user_id,
+                                  name=card.name,
+                                  description=card.description,
+                                  expiration_date=card.expiration_date,
+                                  priority=card.priority,
+                                  assignee=card.assignee_id,
+                                  children=card.children,
+                                  tags=card.tags,
+                                  list_id=list_id,
+                                  request_type=RequestType.WRITE)
+        response, error = self.storage_provider.execute(request)
+
+        if error is not None:
+            raise Error(error.description)
+
+        return response.cards[0]
 
 

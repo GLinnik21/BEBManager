@@ -1,5 +1,5 @@
-from collections import namedtuple
 import enum
+from collections import namedtuple
 from typing import List
 
 from peewee import (SqliteDatabase,
@@ -10,42 +10,45 @@ from beb_lib import (IProvider,
                      RequestType,
                      AccessType,
                      Board,
+                     Tag,
+                     Card,
                      CardsList,
                      RESPONSE_BASE_FIELDS,
                      CARD_LIST_DEFAULTS)
-
 from .access_validator import (check_access_to_board,
                                check_access_to_list,
-                               check_access_to_task,
+                               check_access_to_card,
                                add_right,
                                remove_right)
-
 from .models import (BoardModel,
                      CardListModel,
                      TagModel,
                      CardModel,
                      TagCard,
+                     ParentChild,
                      CardUserAccess,
                      CardListUserAccess,
                      BoardUserAccess,
                      DATABASE_PROXY)
-
+from .provider_protocol import IStorageProviderProtocol
 from .provider_requests import (BoardDataRequest,
-                                ListDataRequest,
+                                CardDataRequest,
                                 AddAccessRightRequest,
                                 RemoveAccessRightRequest)
 
-from .provider_protocol import IStorageProviderProtocol
-
 BoardDataResponse = namedtuple('BoardDataResponse', RESPONSE_BASE_FIELDS + ['boards'])
 ListDataResponse = namedtuple('ListDataResponse', RESPONSE_BASE_FIELDS + ['lists'])
+CardDataResponse = namedtuple('CardDataResponse', RESPONSE_BASE_FIELDS + ['cards'])
 
 
 @enum.unique
 class StorageProviderErrors(enum.IntEnum):
+    INVALID_REQUEST = enum.auto()
+    REQUEST_TYPE_NOT_SPECIFIED = enum.auto()
     ACCESS_DENIED = enum.auto()
     BOARD_DOES_NOT_EXIST = enum.auto()
     LIST_DOES_NOT_EXIST = enum.auto()
+    CARD_DOES_NOT_EXIST = enum.auto()
 
 
 class StorageProvider(IProvider, IStorageProviderProtocol):
@@ -59,6 +62,16 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
         self.is_connected = False
         DATABASE_PROXY.initialize(self.database)
 
+        self.handler_map = {
+            BoardDataRequest: lambda request: StorageProvider._process_board_call(request),
+            CardListUserAccess: lambda request: StorageProvider._process_list_call(request),
+            CardDataRequest: lambda request: StorageProvider._process_card_call(request),
+            AddAccessRightRequest: lambda request: add_right(request.object_type, request.object_id,
+                                                             request.user_id, request.access_type),
+            RemoveAccessRightRequest: lambda request: remove_right(request.object_type, request.object_id,
+                                                                   request.user_id, request.access_type)
+        }
+
     def open(self) -> None:
         if not self.is_connected:
             self.database.connect()
@@ -68,6 +81,7 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
                                      TagModel,
                                      CardModel,
                                      TagCard,
+                                     ParentChild,
                                      CardUserAccess,
                                      CardListUserAccess,
                                      BoardUserAccess])
@@ -77,16 +91,43 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
         self.is_connected = False
 
     def execute(self, request: namedtuple) -> (namedtuple, BaseError):
-        if type(request).__name__ == BoardDataRequest.__name__:
-            return StorageProvider._process_board_call(request)
-        elif type(request).__name__ == ListDataRequest.__name__:
-            return StorageProvider._process_list_call(request)
-        elif type(request).__name__ == AddAccessRightRequest.__name__:
-            add_right(request.object_type, request.object_id, request.user_id, request.access_type)
-            return None, None
-        elif type(request).__name__ == RemoveAccessRightRequest.__name__:
-            remove_right(request.object_type, request.object_id, request.user_id, request.access_type)
-            return None, None
+        if type(request.request_type) is not RequestType:
+            return None, BaseError(code=StorageProviderErrors.REQUEST_TYPE_NOT_SPECIFIED,
+                                   description='Request type is not specified')
+
+        handler = self.handler_map[type(request)]
+
+        if handler is None:
+            return None, BaseError(code=StorageProviderErrors.INVALID_REQUEST,
+                                   description='This request cannot be handled by this provider')
+
+        return handler(request)
+
+    @staticmethod
+    def _create_tag_from_orm(tag_model: TagModel) -> Tag:
+        return Tag(tag_model.name, tag_model.id, tag_model.color)
+
+    @staticmethod
+    def _create_card_from_orm(card_model: CardModel) -> Card:
+        children = []
+        for parent_child in ParentChild.select().where(ParentChild.parent == card_model):
+            children += [parent_child.child.id]
+
+        tags = []
+        for tag_card in TagCard.select().where(TagCard.card == card_model):
+            tags += [tag_card.tag.id]
+
+        return Card(card_model.name, card_model.id, card_model.user_id,
+                    card_model.assignee_id, card_model.description,
+                    card_model.expiration_date, card_model.priority,
+                    children, tags, card_model.created, card_model.last_modified)
+
+    @staticmethod
+    def _map_request_to_access_types(request_type: RequestType) -> AccessType:
+        if request_type == RequestType.WRITE or request_type == RequestType.DELETE:
+            return AccessType.WRITE
+        else:
+            return AccessType.READ
 
     @staticmethod
     def _create_board_with_defaults(board_name: str, user_id: int) -> List[Board]:
@@ -183,12 +224,7 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
         try:
             board = BoardModel.get(BoardModel.id == request.board_id)
             access_to_board = check_access_to_board(board, request.request_user_id)
-
-            required_access = None
-            if request.request_type == RequestType.WRITE or request.request_type == RequestType.DELETE:
-                required_access = AccessType.WRITE
-            else:
-                required_access = AccessType.READ
+            required_access = StorageProvider._map_request_to_access_types(request.request_type)
 
             if not bool(access_to_board & required_access):
                 return None, BaseError(StorageProviderErrors.ACCESS_DENIED, "This user has not enough rights for this "
@@ -254,3 +290,86 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
                                        description="List doesn't exist")
 
         return ListDataResponse(lists=list_response, request_id=request.request_id), None
+
+    @staticmethod
+    def _process_card_call(request: CardDataRequest) -> (namedtuple, BaseError):
+        user_id = request.request_user_id
+        card_response = None
+        card_list = None
+
+        try:
+            card_list = CardListModel.get(CardListModel.id == request.list_id)
+            access_to_list = check_access_to_board(card_list.board, user_id)
+            access_to_list &= check_access_to_list(card_list, user_id)
+            required_access = StorageProvider._map_request_to_access_types(request.request_type)
+
+            if not bool(access_to_list & required_access):
+                return None, BaseError(StorageProviderErrors.ACCESS_DENIED, "This user has not enough rights for this "
+                                                                            "list")
+        except DoesNotExist:
+            return None, BaseError(code=StorageProviderErrors.LIST_DOES_NOT_EXIST,
+                                   description="List or board doesn't exist")
+
+        if request.request_type == RequestType.WRITE:
+            try:
+                card = None
+                if request.id is not None:
+                    card = CardModel.get(CardModel.id == request.id)
+                elif request.name is not None:
+                    card = CardModel.get(CardModel.name == request.name)
+
+                if bool(check_access_to_card(card, user_id) & AccessType.WRITE):
+                    card.name = request.name
+                    card.description = request.description
+                    card.expiration_date = request.expiration_date
+                    card.priority = request.priority
+                    card.assignee_id = request.assignee
+                    card.list = card_list
+
+                    actual_children_quarry = ParentChild.select().where(ParentChild.parent == card)
+                    for parent_child in actual_children_quarry:
+                        if bool(check_access_to_card(parent_child.child, user_id) & AccessType.READ) or \
+                                parent_child.child.id not in request.children:
+                            parent_child.delete_instance()
+
+                    if request.children is not None:
+                        potential_children_quarry = CardModel.select().where(CardModel.id.in_(request.children))
+                        for iter_card in potential_children_quarry:
+                            if bool(check_access_to_card(iter_card, user_id) & AccessType.READ):
+                                try:
+                                    ParentChild.get(ParentChild.parent == card, ParentChild.child == iter_card)
+                                except DoesNotExist:
+                                    ParentChild.create(parent=card, child=iter_card)
+
+                    for tag_card in TagCard.select().where(TagCard.card == card):
+                        if tag_card.tag.id not in request.tags:
+                            tag_card.delete_instance()
+
+                    if request.tags is not None:
+                        for tag in TagModel.select().where(TagModel.id.in_(request.tags)):
+                            TagCard.create(tag=tag, card=card)
+
+                    card.save()
+                    card_response = [StorageProvider._create_card_from_orm(card)]
+                else:
+                    return None, BaseError(StorageProviderErrors.ACCESS_DENIED, "This user can't write to this card")
+            except DoesNotExist:
+                card = CardModel.create(name=request.name,
+                                        description=request.description,
+                                        expiration_date=request.expiration_date,
+                                        priority=request.priority,
+                                        assignee_id=request.assignee,
+                                        list=card_list,
+                                        user_id=user_id)
+
+                for tag in TagModel.select().where(TagModel.id.in_(request.tags)):
+                    TagCard.create(tag=tag, card=card)
+
+                potential_children_quarry = CardModel.select().where(CardModel.id.in_(request.children))
+                for iter_card in potential_children_quarry:
+                    if bool(check_access_to_card(iter_card, user_id) & AccessType.READ):
+                        ParentChild.create(parent=card, child=iter_card)
+
+                card_response = [StorageProvider._create_card_from_orm(card)]
+
+            return CardDataResponse(cards=card_response, request_id=request.request_id), None

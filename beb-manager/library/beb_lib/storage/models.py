@@ -47,11 +47,9 @@ class CardModel(BaseNameModel):
     description = CharField(default="")
     expiration_date = DateTimeField(null=True)
     priority = IntegerField(default=Priority.MEDIUM.value)
-    user_id = IntegerField(null=True)
+    user_id = IntegerField()
     assignee_id = IntegerField(null=True)
-    parent_task_id = IntegerField(null=True)
     list = ForeignKeyField(CardListModel, backref='cards', null=True)
-    tag = ForeignKeyField(TagModel, backref='cards', null=True)
     created = DateTimeField(default=datetime.datetime.now)
     last_modified = DateTimeField(default=datetime.datetime.now)
 
@@ -60,7 +58,15 @@ class CardModel(BaseNameModel):
         return super(CardModel, self).save(*args, **kwargs)
 
 
-class TagCard(BaseNameModel):
+class ParentChild(BaseModel):
+    """
+    Made for many-to-many relation
+    """
+    parent = ForeignKeyField(CardModel)
+    child = ForeignKeyField(CardModel)
+
+
+class TagCard(BaseModel):
     """
     Made for many-to-many relation
     """

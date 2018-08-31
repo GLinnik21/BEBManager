@@ -72,8 +72,8 @@ class Card(UniqueObject):
                  description: str = None,
                  expiration_date: datetime = None,
                  priority: int = None,
-                 parent: UniqueObject = None,
-                 tags: List[Tag] = None,
+                 children: List[int] = None,
+                 tags: List[int] = None,
                  created: datetime = None,
                  last_modified: datetime = None,
                  ):
@@ -87,8 +87,8 @@ class Card(UniqueObject):
         :param expiration_date: Date when the task should be done
         :param priority: Priority of the task. Recommended to use values from 1 to 100 or just predefined values from
         Priority enum
-        :param parent: Parent card
-        :param tags: Tags to sort cards by them
+        :param children: Children cards ID's
+        :param tags: Tags to sort card
         :param created: Date when the task was created
         :param last_modified: Date when the task was last edited
         """
@@ -98,7 +98,7 @@ class Card(UniqueObject):
         self.description = description
         self.expiration_date = expiration_date
         self.priority = priority
-        self.parent = parent
+        self._children = children
         self._tags = tags
         self.created = created
         self.last_modified = last_modified
@@ -106,6 +106,10 @@ class Card(UniqueObject):
     @property
     def tags(self):
         return self._tags
+
+    @property
+    def children(self):
+        return self._children
 
 
 CARD_LIST_DEFAULTS = ['To Do',
