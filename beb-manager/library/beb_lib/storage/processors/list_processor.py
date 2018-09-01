@@ -15,8 +15,8 @@ from beb_lib.storage.access_validator import (check_access_to_board,
 
 METHOD_MAP = {
     RequestType.WRITE: lambda request, user_id, board_model: write_list(request, board_model, user_id),
-    RequestType.READ: lambda request, user_id: read_list(request, user_id),
-    RequestType.DELETE: lambda request, user_id: delete_list(request, user_id)
+    RequestType.READ: lambda request, user_id, board_model: read_list(request, user_id),
+    RequestType.DELETE: lambda request, user_id, board_model: delete_list(request, user_id)
 }
 
 

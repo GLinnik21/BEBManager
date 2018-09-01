@@ -2,7 +2,11 @@ import random
 from typing import List
 
 from beb_lib.domain_entities import Board, AccessType, CardsList, Card
-from beb_lib.model.exceptions import BoardDoesNotExistError, AccessDeniedError, Error
+from beb_lib.model.exceptions import (BoardDoesNotExistError,
+                                      ListDoesNotExistError,
+                                      CardDoesNotExistError,
+                                      AccessDeniedError,
+                                      Error)
 from beb_lib.provider_interfaces import RequestType
 from beb_lib.storage.provider import StorageProvider, StorageProviderErrors
 from beb_lib.storage.provider_protocol import IStorageProviderProtocol
@@ -60,7 +64,7 @@ class Model:
                 raise BoardDoesNotExistError(error.description)
             else:
                 raise Error("""Undefined DB exception! 
-                                Code: {} Description: {}""".format(error.error, error.description))
+                                Code: {} Description: {}""".format(error.code, error.description))
 
         return response.boards
 
@@ -77,7 +81,7 @@ class Model:
                 raise AccessDeniedError(error.description)
             else:
                 raise Error("""Undefined DB exception! 
-                Code: {} Description: {}""".format(error.error, error.description))
+                Code: {} Description: {}""".format(error.code, error.description))
 
         return response.boards[0]
 
@@ -113,10 +117,10 @@ class Model:
             if error.code == StorageProviderErrors.ACCESS_DENIED:
                 raise AccessDeniedError(error.description)
             elif error.code == StorageProviderErrors.LIST_DOES_NOT_EXIST:
-                raise BoardDoesNotExistError(error.description)
+                raise ListDoesNotExistError(error.description)
             else:
                 raise Error("""Undefined DB exception! 
-                                Code: {} Description: {}""".format(error.error, error.description))
+                                Code: {} Description: {}""".format(error.code, error.description))
 
         return response.lists
 
@@ -136,7 +140,7 @@ class Model:
                 raise AccessDeniedError(error.description)
             else:
                 raise Error("""Undefined DB exception! 
-                Code: {} Description: {}""".format(error.error, error.description))
+                Code: {} Description: {}""".format(error.code, error.description))
 
         return response.lists[0]
 
@@ -154,13 +158,43 @@ class Model:
         if error is not None:
             if error.code == StorageProviderErrors.ACCESS_DENIED:
                 raise AccessDeniedError(error.description)
+            elif error.code == StorageProviderErrors.LIST_DOES_NOT_EXIST:
+                raise ListDoesNotExistError(error.description)
             else:
                 raise Error("""Undefined DB exception! 
-                Code: {} Description: {}""".format(error.error, error.description))
+                Code: {} Description: {}""".format(error.code, error.description))
+
+    def card_read(self, card_id: int = None, list_id: int = None, card_name: str = None,
+                  request_user_id: int = None) -> List[Card]:
+        request = CardDataRequest(request_id=random.randrange(1000000),
+                                  id=card_id,
+                                  request_user_id=request_user_id,
+                                  name=card_name,
+                                  description=None,
+                                  expiration_date=None,
+                                  priority=None,
+                                  assignee=None,
+                                  children=None,
+                                  tags=None,
+                                  list_id=list_id,
+                                  request_type=RequestType.READ)
+
+        response, error = self.storage_provider.execute(request)
+
+        if error is not None:
+            if error.code == StorageProviderErrors.ACCESS_DENIED:
+                raise AccessDeniedError(error.description)
+            elif error.code == StorageProviderErrors.CARD_DOES_NOT_EXIST:
+                raise CardDoesNotExistError(error.description)
+            else:
+                raise Error("""Undefined DB exception! 
+                                Code: {} Description: {}""".format(error.code, error.description))
+
+        return response.cards
 
     def card_write(self, card: Card, list_id: int, request_user_id: int = None) -> Card:
         request = CardDataRequest(request_id=random.randrange(1000000),
-                                  id=card.user_id,
+                                  id=None,
                                   request_user_id=request_user_id,
                                   name=card.name,
                                   description=card.description,
@@ -174,12 +208,37 @@ class Model:
         response, error = self.storage_provider.execute(request)
 
         if error is not None:
-            raise Error(error.description)
+            if error.code == StorageProviderErrors.ACCESS_DENIED:
+                raise AccessDeniedError(error.description)
+            else:
+                raise Error("""Undefined DB exception! 
+                Code: {} Description: {}""".format(error.code, error.description))
 
         return response.cards[0]
 
+    def card_delete(self, card_id: int = None, list_id: int = None, card_name: str = None,
+                    request_user_id: int = None) -> None:
+        request = CardDataRequest(request_id=random.randrange(1000000),
+                                  id=card_id,
+                                  request_user_id=request_user_id,
+                                  name=card_name,
+                                  description=None,
+                                  expiration_date=None,
+                                  priority=None,
+                                  assignee=None,
+                                  children=None,
+                                  tags=None,
+                                  list_id=list_id,
+                                  request_type=RequestType.DELETE)
 
-if __name__ == '__main__':
-    model = Model("/Users/gleblinnik/Developer/isp/beb-manager/library/db.db")
-    card = Card("Hello", None, None, None, 'New card', None, 50, None, [1, 2])
-    model.card_write(card, 4, 1)
+        response, error = self.storage_provider.execute(request)
+
+        if error is not None:
+            if error.code == StorageProviderErrors.ACCESS_DENIED:
+                raise AccessDeniedError(error.description)
+            elif error.code == StorageProviderErrors.CARD_DOES_NOT_EXIST:
+                raise CardDoesNotExistError(error.description)
+            else:
+                raise Error("""Undefined DB exception! 
+                Code: {} Description: {}""".format(error.code, error.description))
+

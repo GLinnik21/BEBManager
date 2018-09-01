@@ -19,7 +19,9 @@ from beb_lib.storage.models import (CardListModel,
 from beb_lib.storage.provider_requests import (CardDataRequest)
 
 METHOD_MAP = {
-    RequestType.WRITE: lambda request, user_id, list_model: write_card(request, user_id, list_model)
+    RequestType.WRITE: lambda request, user_id, list_model: write_card(request, user_id, list_model),
+    RequestType.READ: lambda request, user_id, list_model: read_card(request, user_id),
+    RequestType.DELETE: lambda request, user_id, list_model: delete_card(request, user_id)
 }
 
 
@@ -105,6 +107,42 @@ def write_card(request: CardDataRequest, user_id: int, card_list: CardListModel)
                 ParentChild.create(parent=card, child=iter_card)
 
         return [_create_card_from_orm(card)], None
+
+
+def read_card(request: CardDataRequest, user_id: int) -> (List[Card], BaseError):
+    if request.id is None and request.name is None:
+        card_response = []
+        query = CardModel.select()
+        for card in query:
+            if bool(check_access_to_card(card, user_id) & AccessType.READ):
+                card_response += _create_card_from_orm(card)
+        return card_response, None
+    else:
+        try:
+            card = CardModel.get((CardModel.id == request.id) | (CardModel.name == request.name))
+            if bool(check_access_to_card(card, user_id) & AccessType.READ):
+                return _create_card_from_orm(card), None
+            else:
+                return None, BaseError(code=provider.StorageProviderErrors.ACCESS_DENIED,
+                                       description="This user can't read this card")
+        except DoesNotExist:
+            return None, BaseError(code=provider.StorageProviderErrors.LIST_DOES_NOT_EXIST,
+                                   description="Card doesn't exist")
+
+
+def delete_card(request: CardDataRequest, user_id: int) -> (List[Card], BaseError):
+    try:
+        card = CardModel.get((CardModel.id == request.id) | (CardModel.name == request.name))
+        access = check_access_to_card(card, user_id)
+        if bool(access & AccessType.WRITE):
+            _delete_card(card)
+        else:
+            return None, BaseError(code=provider.StorageProviderErrors.ACCESS_DENIED,
+                                   description="This user can't delete this card")
+    except DoesNotExist:
+        return None, BaseError(code=provider.StorageProviderErrors.LIST_DOES_NOT_EXIST,
+                               description="Card doesn't exist")
+    return None, None
 
 
 def process_card_call(request: CardDataRequest) -> (namedtuple, BaseError):

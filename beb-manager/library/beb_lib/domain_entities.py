@@ -81,7 +81,7 @@ class Card(UniqueObject):
 
         :param name: Name of the card.
         :param unique_id: Unique identifier of card. If None is passed a new UUID would be generated
-        :param user_id: The id of the user who has created with card
+        :param user_id: The id of the user who has created this card
         :param assignee_id: The id of the user who the particular card was assigned
         :param description: Task description
         :param expiration_date: Date when the task should be done

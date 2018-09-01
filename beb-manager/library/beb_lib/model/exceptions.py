@@ -19,3 +19,9 @@ class ListDoesNotExistError(Error):
 
     def __init__(self, reason):
         super().__init__(reason)
+
+
+class CardDoesNotExistError(Error):
+
+    def __init__(self, reason):
+        super().__init__(reason)
