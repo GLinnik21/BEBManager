@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-from beb_lib import REQUEST_ACCESS_FIELDS, REQUEST_BASE_FIELDS
+from beb_lib.provider_interfaces import REQUEST_ACCESS_FIELDS, REQUEST_BASE_FIELDS
 
 BoardDataRequest = namedtuple('BoardDataRequest', REQUEST_ACCESS_FIELDS + ['id', 'name'])
 

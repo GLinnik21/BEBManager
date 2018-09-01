@@ -2,18 +2,15 @@ from typing import Optional
 import peewee
 from peewee import DoesNotExist
 
-from beb_lib import (AccessType,
-                     Board,
-                     CardsList,
-                     Card)
-
-from .models import (BaseModel,
-                     BoardModel,
-                     CardListModel,
-                     BoardUserAccess,
-                     CardListUserAccess,
-                     CardModel,
-                     CardUserAccess)
+from beb_lib.domain_entities import AccessType, CardsList, Board, Card
+from beb_lib.provider_interfaces import RequestType
+from beb_lib.storage.models import (BaseModel,
+                                    BoardModel,
+                                    CardListModel,
+                                    BoardUserAccess,
+                                    CardListUserAccess,
+                                    CardModel,
+                                    CardUserAccess)
 
 
 def _create_access_type(query: peewee.ModelSelect):
@@ -50,6 +47,13 @@ def check_access_to_card(card: CardModel, user_id: int) -> AccessType:
     return _create_access_type(query)
 
 
+def map_request_to_access_types(request_type: RequestType) -> AccessType:
+    if request_type == RequestType.WRITE or request_type == RequestType.DELETE:
+        return AccessType.WRITE
+    else:
+        return AccessType.READ
+
+
 def _get_orm_model(object_type: object, object_id: int, user_id: int) -> Optional[BaseModel]:
     class_name = object_type.__name__
 
@@ -69,7 +73,7 @@ def _get_orm_model(object_type: object, object_id: int, user_id: int) -> Optiona
         elif class_name == CardsList.__name__:
             return CardListUserAccess.create(card_list=object_id, user_id=user_id, access_type=0)
         elif class_name == Card.__name__:
-            return CardUserAccess.create(card=object_id,user_id=user_id, access_type=0)
+            return CardUserAccess.create(card=object_id, user_id=user_id, access_type=0)
 
 
 def add_right(object_type: object, object_id: int, user_id: int, access_type: AccessType) -> None:

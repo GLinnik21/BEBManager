@@ -1,16 +1,16 @@
 import random
 from typing import List
 
-from beb_lib import Board, RequestType, AccessType, CardsList, Card
+from beb_lib.domain_entities import Board, AccessType, CardsList, Card
 from beb_lib.model.exceptions import BoardDoesNotExistError, AccessDeniedError, Error
-from beb_lib.storage import (StorageProvider,
-                             BoardDataRequest,
-                             CardDataRequest,
-                             ListDataRequest,
-                             AddAccessRightRequest,
-                             RemoveAccessRightRequest,
-                             IStorageProviderProtocol,
-                             StorageProviderErrors)
+from beb_lib.provider_interfaces import RequestType
+from beb_lib.storage.provider import StorageProvider, StorageProviderErrors
+from beb_lib.storage.provider_protocol import IStorageProviderProtocol
+from beb_lib.storage.provider_requests import (BoardDataRequest,
+                                               CardDataRequest,
+                                               ListDataRequest,
+                                               AddAccessRightRequest,
+                                               RemoveAccessRightRequest)
 
 
 class Model:
@@ -179,3 +179,7 @@ class Model:
         return response.cards[0]
 
 
+if __name__ == '__main__':
+    model = Model("/Users/gleblinnik/Developer/isp/beb-manager/library/db.db")
+    card = Card("Hello", None, None, None, 'New card', None, 50, None, [1, 2])
+    model.card_write(card, 4, 1)
