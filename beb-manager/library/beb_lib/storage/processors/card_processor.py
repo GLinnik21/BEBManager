@@ -90,23 +90,27 @@ def write_card(request: CardDataRequest, user_id: int, card_list: CardListModel)
         else:
             return None, BaseError(provider.StorageProviderErrors.ACCESS_DENIED, "This user can't write to this card")
     except DoesNotExist:
-        card = CardModel.create(name=request.name,
-                                description=request.description,
-                                expiration_date=request.expiration_date,
-                                priority=Priority.MEDIUM if request.priority is None else request.priority,
-                                assignee_id=request.assignee,
-                                list=card_list,
-                                user_id=user_id)
+        if bool(check_access_to_list(card_list, user_id) & AccessType.WRITE):
+            card = CardModel.create(name=request.name,
+                                    description=request.description,
+                                    expiration_date=request.expiration_date,
+                                    priority=Priority.MEDIUM if request.priority is None else request.priority,
+                                    assignee_id=request.assignee,
+                                    list=card_list,
+                                    user_id=user_id)
 
-        for tag in TagModel.select().where(TagModel.id.in_(request.tags)):
-            TagCard.create(tag=tag, card=card)
+            for tag in TagModel.select().where(TagModel.id.in_(request.tags)):
+                TagCard.create(tag=tag, card=card)
 
-        potential_children_quarry = CardModel.select().where(CardModel.id.in_(request.children))
-        for iter_card in potential_children_quarry:
-            if bool(check_access_to_card(iter_card, user_id) & AccessType.READ):
-                ParentChild.create(parent=card, child=iter_card)
+            potential_children_quarry = CardModel.select().where(CardModel.id.in_(request.children))
+            for iter_card in potential_children_quarry:
+                if bool(check_access_to_card(iter_card, user_id) & AccessType.READ):
+                    ParentChild.create(parent=card, child=iter_card)
 
-        return [_create_card_from_orm(card)], None
+            return [_create_card_from_orm(card)], None
+        else:
+            return None, BaseError(provider.StorageProviderErrors.ACCESS_DENIED, "This user has not enough rights for "
+                                                                                 "this list")
 
 
 def read_card(request: CardDataRequest, user_id: int) -> (List[Card], BaseError):
@@ -147,16 +151,8 @@ def delete_card(request: CardDataRequest, user_id: int) -> (List[Card], BaseErro
 
 def process_card_call(request: CardDataRequest) -> (namedtuple, BaseError):
     try:
-        card_list = CardListModel.get(CardListModel.id == request.list_id)
+        card_list = CardListModel.get(CardListModel.id == request.list_id) if request.list_id is not None else None
         user_id = request.request_user_id
-        access_to_list = check_access_to_board(card_list.board, user_id)
-        access_to_list &= check_access_to_list(card_list, user_id)
-        required_access = map_request_to_access_types(request.request_type)
-
-        if not bool(access_to_list & required_access):
-            return None, BaseError(provider.StorageProviderErrors.ACCESS_DENIED, "This user has not enough rights for "
-                                                                                 "this list")
-
         card_response, error = METHOD_MAP[request.request_type](request, user_id, card_list)
 
         return provider.CardDataResponse(cards=card_response, request_id=request.request_id), error

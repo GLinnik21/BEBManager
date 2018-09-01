@@ -44,9 +44,13 @@ def write_list(request: BoardDataRequest, board: BoardModel, user_id: int) -> (L
         else:
             return None, BaseError(provider.StorageProviderErrors.ACCESS_DENIED, "This user can't write to this list")
     except DoesNotExist:
-        card_list = CardListModel.create(name=request.name, board=board)
-        CardListUserAccess.create(user_id=user_id, card_list=card_list)
-        return [CardsList(card_list.name, card_list.id)], None
+        if bool(check_access_to_board(board, user_id) & AccessType.WRITE):
+            card_list = CardListModel.create(name=request.name, board=board)
+            CardListUserAccess.create(user_id=user_id, card_list=card_list)
+            return [CardsList(card_list.name, card_list.id)], None
+        else:
+            return None, BaseError(provider.StorageProviderErrors.ACCESS_DENIED, "This user has not enough rights for "
+                                                                                 "this board")
 
 
 def read_list(request: BoardDataRequest, user_id: int) -> (List[CardsList], BaseError):
@@ -90,15 +94,8 @@ def delete_list(request: BoardDataRequest, user_id: int) -> (List[CardsList], Ba
 
 def process_list_call(request: BoardDataRequest) -> (provider.ListDataResponse, BaseError):
     try:
-        board = BoardModel.get(BoardModel.id == request.board_id)
+        board = BoardModel.get(BoardModel.id == request.board_id) if request.board_id is not None else None
         user_id = request.request_user_id
-        access_to_board = check_access_to_board(board, request.request_user_id)
-        required_access = map_request_to_access_types(request.request_type)
-
-        if not bool(access_to_board & required_access):
-            return None, BaseError(provider.StorageProviderErrors.ACCESS_DENIED, "This user has not enough rights for "
-                                                                                 "this board")
-
         list_response, error = METHOD_MAP[request.request_type](request, user_id, board)
 
         return provider.ListDataResponse(lists=list_response, request_id=request.request_id), error

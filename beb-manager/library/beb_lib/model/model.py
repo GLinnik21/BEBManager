@@ -102,12 +102,12 @@ class Model:
                 raise Error("""Undefined DB exception! 
                 Code: {} Description: {}""".format(error.code, error.description))
 
-    def list_read(self, list_id: int = None, board_id: int = None, list_name: str = None,
+    def list_read(self, list_id: int = None, list_name: str = None,
                   request_user_id: int = None) -> CardsList:
         request = ListDataRequest(request_id=random.randrange(1000000),
                                   request_user_id=request_user_id,
                                   id=list_id,
-                                  board_id=board_id,
+                                  board_id=None,
                                   name=list_name,
                                   request_type=RequestType.READ)
 
@@ -124,7 +124,7 @@ class Model:
 
         return response.lists
 
-    def list_write(self, list_id: int = None, board_id: int = None, list_name: str = None,
+    def list_write(self, board_id: int, list_id: int = None, list_name: str = None,
                    request_user_id: int = None) -> CardsList:
         request = ListDataRequest(request_id=random.randrange(1000000),
                                   request_user_id=request_user_id,
@@ -144,12 +144,12 @@ class Model:
 
         return response.lists[0]
 
-    def list_delete(self, list_id: int = None, board_id: int = None, list_name: str = None,
+    def list_delete(self, list_id: int = None, list_name: str = None,
                     request_user_id: int = None) -> None:
         request = ListDataRequest(request_id=random.randrange(1000000),
                                   request_user_id=request_user_id,
                                   id=list_id,
-                                  board_id=board_id,
+                                  board_id=None,
                                   name=list_name,
                                   request_type=RequestType.DELETE)
 
@@ -164,7 +164,7 @@ class Model:
                 raise Error("""Undefined DB exception! 
                 Code: {} Description: {}""".format(error.code, error.description))
 
-    def card_read(self, card_id: int = None, list_id: int = None, card_name: str = None,
+    def card_read(self, card_id: int = None, card_name: str = None,
                   request_user_id: int = None) -> List[Card]:
         request = CardDataRequest(request_id=random.randrange(1000000),
                                   id=card_id,
@@ -176,7 +176,7 @@ class Model:
                                   assignee=None,
                                   children=None,
                                   tags=None,
-                                  list_id=list_id,
+                                  list_id=None,
                                   request_type=RequestType.READ)
 
         response, error = self.storage_provider.execute(request)
@@ -192,7 +192,7 @@ class Model:
 
         return response.cards
 
-    def card_write(self, card: Card, list_id: int, request_user_id: int = None) -> Card:
+    def card_write(self, list_id: int, card: Card, request_user_id: int = None) -> Card:
         request = CardDataRequest(request_id=random.randrange(1000000),
                                   id=None,
                                   request_user_id=request_user_id,
@@ -216,7 +216,7 @@ class Model:
 
         return response.cards[0]
 
-    def card_delete(self, card_id: int = None, list_id: int = None, card_name: str = None,
+    def card_delete(self, card_id: int = None, card_name: str = None,
                     request_user_id: int = None) -> None:
         request = CardDataRequest(request_id=random.randrange(1000000),
                                   id=card_id,
@@ -228,7 +228,7 @@ class Model:
                                   assignee=None,
                                   children=None,
                                   tags=None,
-                                  list_id=list_id,
+                                  list_id=None,
                                   request_type=RequestType.DELETE)
 
         response, error = self.storage_provider.execute(request)

@@ -35,7 +35,7 @@ def check_access_to_list(card_list: CardListModel, user_id: int) -> AccessType:
              .join(CardListModel)
              .where((CardListUserAccess.user_id == user_id) & (CardListUserAccess.card_list == card_list)))
 
-    return _create_access_type(query)
+    return _create_access_type(query) & check_access_to_board(card_list.board, user_id)
 
 
 def check_access_to_card(card: CardModel, user_id: int) -> AccessType:
@@ -44,7 +44,7 @@ def check_access_to_card(card: CardModel, user_id: int) -> AccessType:
              .join(CardModel)
              .where((CardUserAccess.user_id == user_id) & (CardUserAccess.card == card)))
 
-    return _create_access_type(query)
+    return _create_access_type(query) & check_access_to_list(card.list, user_id)
 
 
 def map_request_to_access_types(request_type: RequestType) -> AccessType:
