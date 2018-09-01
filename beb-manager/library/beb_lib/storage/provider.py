@@ -18,7 +18,8 @@ from beb_lib.storage.models import (BoardModel,
 from beb_lib.storage.provider_requests import (BoardDataRequest,
                                                CardDataRequest,
                                                AddAccessRightRequest,
-                                               RemoveAccessRightRequest)
+                                               RemoveAccessRightRequest,
+                                               ListDataRequest)
 
 BoardDataResponse = namedtuple('BoardDataResponse', RESPONSE_BASE_FIELDS + ['boards'])
 ListDataResponse = namedtuple('ListDataResponse', RESPONSE_BASE_FIELDS + ['lists'])
@@ -44,6 +45,7 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
         self.database_path = path_to_db
         self.database = SqliteDatabase(path_to_db)
         self.is_connected = False
+        self.archived_list_id = None
         DATABASE_PROXY.initialize(self.database)
         # To prevent import cycle
         from beb_lib.storage.processors.board_processor import process_board_call
@@ -52,7 +54,7 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
 
         self.handler_map = {
             BoardDataRequest: lambda request: process_board_call(request),
-            CardListUserAccess: lambda request: process_list_call(request),
+            ListDataRequest: lambda request: process_list_call(request),
             CardDataRequest: lambda request: process_card_call(request),
             AddAccessRightRequest: lambda request: add_right(request.object_type, request.object_id,
                                                              request.user_id, request.access_type),
@@ -73,6 +75,7 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
                                      CardUserAccess,
                                      CardListUserAccess,
                                      BoardUserAccess])
+        self.archived_list_id = CardListModel.get_or_create(name='Archived')[0].id
 
     def close(self) -> None:
         self.database.close()

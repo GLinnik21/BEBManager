@@ -103,7 +103,7 @@ class Model:
                 Code: {} Description: {}""".format(error.code, error.description))
 
     def list_read(self, list_id: int = None, list_name: str = None,
-                  request_user_id: int = None) -> CardsList:
+                  request_user_id: int = None) -> List[CardsList]:
         request = ListDataRequest(request_id=random.randrange(1000000),
                                   request_user_id=request_user_id,
                                   id=list_id,
@@ -241,4 +241,20 @@ class Model:
             else:
                 raise Error("""Undefined DB exception! 
                 Code: {} Description: {}""".format(error.code, error.description))
+
+    # region convenience methods
+
+    def archive_card(self, card_id: int = None, card_name: str = None,
+                     request_user_id: int = None) -> None:
+        cards = self.card_read(card_id, card_name, request_user_id)
+        self.card_write(self.storage_provider.archived_list_id, cards[0], request_user_id)
+
+    def get_cards_in_list(self, list_id: int, request_user_id: int) -> List[Card]:
+        card_list = self.list_read(list_id=list_id, request_user_id=request_user_id)[0]
+        return [self.card_read(card_id=card_id, request_user_id=request_user_id)[0] for card_id in card_list.cards]
+
+    def get_archived_cards(self, request_user_id: int = None) -> List[Card]:
+        return self.get_cards_in_list(self.storage_provider.archived_list_id, request_user_id)
+
+    # end region
 

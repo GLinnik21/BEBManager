@@ -28,6 +28,7 @@ METHOD_MAP = {
 def _delete_card(card: CardModel):
     CardUserAccess.delete().where(CardUserAccess.card == card).execute()
     TagCard.delete().where(TagCard.card == card).execute()
+    ParentChild.delete().where(ParentChild.parent == card).execute()
     card.delete_instance()
 
 
@@ -58,7 +59,7 @@ def write_card(request: CardDataRequest, user_id: int, card_list: CardListModel)
             card.name = request.name
             card.description = request.description
             card.expiration_date = request.expiration_date
-            card.priority = request.priority
+            card.priority = request.priority if request.priority is not None else Priority.MEDIUM
             card.assignee_id = request.assignee
             card.list = card_list
 
@@ -99,13 +100,15 @@ def write_card(request: CardDataRequest, user_id: int, card_list: CardListModel)
                                     list=card_list,
                                     user_id=user_id)
 
-            for tag in TagModel.select().where(TagModel.id.in_(request.tags)):
-                TagCard.create(tag=tag, card=card)
+            if request.tags is not None:
+                for tag in TagModel.select().where(TagModel.id.in_(request.tags)):
+                    TagCard.create(tag=tag, card=card)
 
-            potential_children_quarry = CardModel.select().where(CardModel.id.in_(request.children))
-            for iter_card in potential_children_quarry:
-                if bool(check_access_to_card(iter_card, user_id) & AccessType.READ):
-                    ParentChild.create(parent=card, child=iter_card)
+            if request.children is not None:
+                potential_children_quarry = CardModel.select().where(CardModel.id.in_(request.children))
+                for iter_card in potential_children_quarry:
+                    if bool(check_access_to_card(iter_card, user_id) & AccessType.READ):
+                        ParentChild.create(parent=card, child=iter_card)
 
             return [_create_card_from_orm(card)], None
         else:
@@ -119,13 +122,13 @@ def read_card(request: CardDataRequest, user_id: int) -> (List[Card], BaseError)
         query = CardModel.select()
         for card in query:
             if bool(check_access_to_card(card, user_id) & AccessType.READ):
-                card_response += _create_card_from_orm(card)
+                card_response += [_create_card_from_orm(card)]
         return card_response, None
     else:
         try:
             card = CardModel.get((CardModel.id == request.id) | (CardModel.name == request.name))
             if bool(check_access_to_card(card, user_id) & AccessType.READ):
-                return _create_card_from_orm(card), None
+                return [_create_card_from_orm(card)], None
             else:
                 return None, BaseError(code=provider.StorageProviderErrors.ACCESS_DENIED,
                                        description="This user can't read this card")
