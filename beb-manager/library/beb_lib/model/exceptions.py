@@ -25,3 +25,15 @@ class CardDoesNotExistError(Error):
 
     def __init__(self, reason):
         super().__init__(reason)
+
+
+class TagDoesNotExistError(Error):
+
+    def __init__(self, reason):
+        super().__init__(reason)
+
+
+class PlanDoesNotExistError(Error):
+
+    def __init__(self, reason):
+        super().__init__(reason)

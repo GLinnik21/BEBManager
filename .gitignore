@@ -138,3 +138,5 @@ fabric.properties
 
 # Editor-based Rest Client
 .idea/httpRequests
+
+beb-manager/library/db\.db

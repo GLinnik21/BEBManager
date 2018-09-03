@@ -16,14 +16,20 @@ CardDataRequest = namedtuple('CardDataRequest', REQUEST_ACCESS_FIELDS + ['id',
                                                                          'tags',
                                                                          'list_id'])
 
-GetAccessRightRequest = namedtuple('GetAccessRightRequest', REQUEST_BASE_FIELDS + ['object_type',
-                                                                                   'object_id',
-                                                                                   'user_id'])
+# GetAccessRightRequest = namedtuple('GetAccessRightRequest', REQUEST_BASE_FIELDS + ['object_type',
+#                                                                                    'object_id',
+#                                                                                    'user_id'])
 
 AddAccessRightRequest = namedtuple('AddAccessRightRequest', REQUEST_BASE_FIELDS + ['object_type',
                                                                                    'object_id',
                                                                                    'user_id',
                                                                                    'access_type'])
+
+TagDataRequest = namedtuple('TagDataRequest', REQUEST_BASE_FIELDS + ['id', 'name', 'color'])
+
+PlanDataRequest = namedtuple('PlanDataRequest', REQUEST_ACCESS_FIELDS + ['interval',
+                                                                         'last_created',
+                                                                         'card_id'])
 
 
 class RemoveAccessRightRequest(AddAccessRightRequest):

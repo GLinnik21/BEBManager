@@ -3,12 +3,15 @@ from typing import List
 from peewee import DoesNotExist
 
 import beb_lib.storage.processors.list_processor as list_processor
-from beb_lib.domain_entities import Board, CARD_LIST_DEFAULTS, AccessType
+from beb_lib.domain_entities.board import Board
+from beb_lib.domain_entities.card import CARD_LIST_DEFAULTS
+from beb_lib.domain_entities.supporting import AccessType
 from beb_lib.provider_interfaces import RequestType, BaseError
 from beb_lib.storage.access_validator import check_access_to_board
 from beb_lib.storage.models import (CardListModel,
                                     BoardModel,
-                                    BoardUserAccess)
+                                    BoardUserAccess
+                                    )
 from beb_lib.storage.provider import BoardDataResponse, StorageProviderErrors
 from beb_lib.storage.provider_requests import BoardDataRequest
 

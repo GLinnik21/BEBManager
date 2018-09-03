@@ -1,12 +1,13 @@
+import datetime
 import random
 from typing import List
 
-from beb_lib.domain_entities import Board, AccessType, CardsList, Card
-from beb_lib.model.exceptions import (BoardDoesNotExistError,
-                                      ListDoesNotExistError,
-                                      CardDoesNotExistError,
-                                      AccessDeniedError,
-                                      Error)
+from beb_lib.domain_entities.board import Board
+from beb_lib.domain_entities.card import Card
+from beb_lib.domain_entities.card_list import CardsList
+from beb_lib.domain_entities.plan import Plan
+from beb_lib.domain_entities.supporting import AccessType
+from beb_lib.domain_entities.tag import Tag
 from beb_lib.provider_interfaces import RequestType
 from beb_lib.storage.provider import StorageProvider, StorageProviderErrors
 from beb_lib.storage.provider_protocol import IStorageProviderProtocol
@@ -14,7 +15,18 @@ from beb_lib.storage.provider_requests import (BoardDataRequest,
                                                CardDataRequest,
                                                ListDataRequest,
                                                AddAccessRightRequest,
-                                               RemoveAccessRightRequest)
+                                               RemoveAccessRightRequest,
+                                               PlanDataRequest,
+                                               TagDataRequest
+                                               )
+from beb_lib.model.exceptions import (BoardDoesNotExistError,
+                                      ListDoesNotExistError,
+                                      CardDoesNotExistError,
+                                      AccessDeniedError,
+                                      Error,
+                                      TagDoesNotExistError,
+                                      PlanDoesNotExistError
+                                      )
 
 
 class Model:
@@ -55,6 +67,7 @@ class Model:
                                    id=board_id,
                                    name=board_name,
                                    request_type=RequestType.READ)
+
         response, error = self.storage_provider.execute(request)
 
         if error is not None:
@@ -74,6 +87,7 @@ class Model:
                                    id=board_id,
                                    name=board_name,
                                    request_type=RequestType.WRITE)
+
         response, error = self.storage_provider.execute(request)
 
         if error is not None:
@@ -91,6 +105,7 @@ class Model:
                                    id=board_id,
                                    name=board_name,
                                    request_type=RequestType.DELETE)
+
         response, error = self.storage_provider.execute(request)
 
         if error is not None:
@@ -192,19 +207,20 @@ class Model:
 
         return response.cards
 
-    def card_write(self, list_id: int, card: Card, request_user_id: int = None) -> Card:
+    def card_write(self, list_id: int, card_instance: Card, request_user_id: int = None) -> Card:
         request = CardDataRequest(request_id=random.randrange(1000000),
                                   id=None,
                                   request_user_id=request_user_id,
-                                  name=card.name,
-                                  description=card.description,
-                                  expiration_date=card.expiration_date,
-                                  priority=card.priority,
-                                  assignee=card.assignee_id,
-                                  children=card.children,
-                                  tags=card.tags,
+                                  name=card_instance.name,
+                                  description=card_instance.description,
+                                  expiration_date=card_instance.expiration_date,
+                                  priority=card_instance.priority,
+                                  assignee=card_instance.assignee_id,
+                                  children=card_instance.children,
+                                  tags=card_instance.tags,
                                   list_id=list_id,
                                   request_type=RequestType.WRITE)
+
         response, error = self.storage_provider.execute(request)
 
         if error is not None:
@@ -242,6 +258,121 @@ class Model:
                 raise Error("""Undefined DB exception! 
                 Code: {} Description: {}""".format(error.code, error.description))
 
+    def tag_read(self, tag_id: int = None, tag_name: str = None) -> List[Tag]:
+        request = TagDataRequest(request_id=random.randrange(1000000),
+                                 id=tag_id,
+                                 name=tag_name,
+                                 color=None,
+                                 request_type=RequestType.READ)
+
+        response, error = self.storage_provider.execute(request)
+
+        if error is not None:
+            if error.code == StorageProviderErrors.TAG_DOES_NOT_EXIST:
+                raise TagDoesNotExistError(error.description)
+            else:
+                raise Error("""Undefined DB exception! 
+                Code: {} Description: {}""".format(error.code, error.description))
+
+        return response.tags
+
+    def tag_write(self, tag_id: int = None, tag_name: str = None, color: int = None) -> Tag:
+        request = TagDataRequest(request_id=random.randrange(1000000),
+                                 id=tag_id,
+                                 name=tag_name,
+                                 color=color,
+                                 request_type=RequestType.WRITE)
+
+        response, error = self.storage_provider.execute(request)
+
+        if error is not None:
+            raise Error("""Undefined DB exception! 
+            Code: {} Description: {}""".format(error.code, error.description))
+
+        return response.tags[0]
+
+    def tag_delete(self, tag_id: int = None, tag_name: str = None) -> None:
+        request = TagDataRequest(request_id=random.randrange(1000000),
+                                 id=tag_id,
+                                 name=tag_name,
+                                 color=None,
+                                 request_type=RequestType.DELETE)
+
+        response, error = self.storage_provider.execute(request)
+
+        if error is not None:
+            if error.code == StorageProviderErrors.TAG_DOES_NOT_EXIST:
+                raise TagDoesNotExistError(error.description)
+            else:
+                raise Error("""Undefined DB exception! 
+                Code: {} Description: {}""".format(error.code, error.description))
+
+    def plan_read(self, card_id: int, user_id: int) -> Plan:
+        request = PlanDataRequest(request_id=random.randrange(1000000),
+                                  request_user_id=user_id,
+                                  interval=None,
+                                  last_created=None,
+                                  card_id=card_id,
+                                  request_type=RequestType.READ)
+
+        plan, error = self.storage_provider.execute(request)
+
+        if error is not None:
+            if error.code == StorageProviderErrors.ACCESS_DENIED:
+                raise AccessDeniedError(error.description)
+            elif error.code == StorageProviderErrors.CARD_DOES_NOT_EXIST:
+                raise CardDoesNotExistError(error.description)
+            elif error.code == StorageProviderErrors.PLAN_DOES_NOT_EXIST:
+                raise PlanDoesNotExistError(error.description)
+            else:
+                raise Error("""Undefined DB exception! 
+                            Code: {} Description: {}""".format(error.code, error.description))
+
+        return plan
+
+    def plan_write(self, card_id: int, user_id: int, interval: datetime.timedelta,
+                   last_created: datetime.datetime) -> Plan:
+        request = PlanDataRequest(request_id=random.randrange(1000000),
+                                  request_user_id=user_id,
+                                  interval=interval,
+                                  last_created=last_created,
+                                  card_id=card_id,
+                                  request_type=RequestType.WRITE)
+
+        plan, error = self.storage_provider.execute(request)
+
+        if error is not None:
+            if error.code == StorageProviderErrors.ACCESS_DENIED:
+                raise AccessDeniedError(error.description)
+            elif error.code == StorageProviderErrors.CARD_DOES_NOT_EXIST:
+                raise CardDoesNotExistError(error.description)
+            else:
+                raise Error("""Undefined DB exception! 
+                                    Code: {} Description: {}""".format(error.code, error.description))
+
+        return plan
+
+    def plan_delete(self, card_id: int, user_id: int) -> None:
+        request = PlanDataRequest(request_id=random.randrange(1000000),
+                                  request_user_id=user_id,
+                                  interval=None,
+                                  last_created=None,
+                                  card_id=card_id,
+                                  request_type=RequestType.DELETE)
+
+        plan, error = self.storage_provider.execute(request)
+
+        if error is not None:
+            if error.code == StorageProviderErrors.ACCESS_DENIED:
+                raise AccessDeniedError(error.description)
+            elif error.code == StorageProviderErrors.CARD_DOES_NOT_EXIST:
+                raise CardDoesNotExistError(error.description)
+            elif error.code == StorageProviderErrors.PLAN_DOES_NOT_EXIST:
+                raise PlanDoesNotExistError(error.description)
+            else:
+                raise Error("""Undefined DB exception! 
+                                    Code: {} Description: {}""".format(error.code, error.description))
+
     # region convenience methods
 
     def archive_card(self, card_id: int = None, card_name: str = None,
@@ -258,3 +389,7 @@ class Model:
 
     # end region
 
+
+if __name__ == '__main__':
+    model = Model("/Users/gleblinnik/Developer/isp/beb-manager/library/db.db")
+    print(model.plan_write(1, 1, datetime.timedelta(days=5), datetime.datetime.fromtimestamp(100000)))

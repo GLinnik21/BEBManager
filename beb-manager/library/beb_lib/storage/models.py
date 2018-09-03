@@ -9,10 +9,7 @@ from peewee import (
     DateTimeField
 )
 
-from beb_lib.domain_entities import (
-    Priority,
-    AccessType
-)
+from beb_lib.domain_entities.supporting import Priority, AccessType
 
 DATABASE_PROXY = Proxy()
 
@@ -40,7 +37,7 @@ class CardListModel(BaseNameModel):
 
 
 class TagModel(BaseNameModel):
-    color = IntegerField(null=True)
+    color = IntegerField()
 
 
 class CardModel(BaseNameModel):
@@ -56,6 +53,13 @@ class CardModel(BaseNameModel):
     def save(self, *args, **kwargs):
         self.last_modified = datetime.datetime.now()
         return super(CardModel, self).save(*args, **kwargs)
+
+
+class PlanModel(BaseModel):
+    id = PrimaryKeyField(null=False)
+    card = ForeignKeyField(CardModel, backref='plan', null=True)
+    interval = IntegerField()
+    last_created_at = DateTimeField()
 
 
 class ParentChild(BaseModel):

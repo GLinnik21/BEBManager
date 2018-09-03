@@ -4,19 +4,21 @@ from typing import List
 from peewee import DoesNotExist
 
 import beb_lib.storage.provider as provider
-from beb_lib.domain_entities import Card, Priority, AccessType
+from beb_lib.domain_entities.card import Card
+from beb_lib.domain_entities.supporting import AccessType, Priority
 from beb_lib.provider_interfaces import RequestType, BaseError
-from beb_lib.storage.access_validator import (check_access_to_board,
-                                              check_access_to_list,
-                                              check_access_to_card,
-                                              map_request_to_access_types)
 from beb_lib.storage.models import (CardListModel,
                                     TagModel,
                                     CardModel,
                                     TagCard,
                                     ParentChild,
-                                    CardUserAccess)
+                                    CardUserAccess,
+                                    PlanModel
+                                    )
 from beb_lib.storage.provider_requests import (CardDataRequest)
+from beb_lib.storage.access_validator import (check_access_to_list,
+                                              check_access_to_card
+                                              )
 
 METHOD_MAP = {
     RequestType.WRITE: lambda request, user_id, list_model: write_card(request, user_id, list_model),
@@ -29,6 +31,7 @@ def _delete_card(card: CardModel):
     CardUserAccess.delete().where(CardUserAccess.card == card).execute()
     TagCard.delete().where(TagCard.card == card).execute()
     ParentChild.delete().where(ParentChild.parent == card).execute()
+    PlanModel.delete().where(PlanModel.card == card)
     card.delete_instance()
 
 

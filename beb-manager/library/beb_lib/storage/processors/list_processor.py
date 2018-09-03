@@ -2,16 +2,19 @@ from typing import List
 from peewee import (DoesNotExist)
 
 import beb_lib.storage.provider as provider
-from beb_lib.domain_entities import CardsList, AccessType
+from beb_lib.domain_entities.card_list import CardsList
+from beb_lib.domain_entities.supporting import AccessType
 from beb_lib.provider_interfaces import RequestType, BaseError
 from beb_lib.storage.processors.card_processor import _delete_card
 from beb_lib.storage.provider_requests import (BoardDataRequest)
 from beb_lib.storage.models import (BoardModel,
                                     CardListModel,
-                                    CardListUserAccess)
+                                    CardListUserAccess
+                                    )
 from beb_lib.storage.access_validator import (check_access_to_board,
                                               check_access_to_list,
-                                              map_request_to_access_types)
+                                              map_request_to_access_types
+                                              )
 
 METHOD_MAP = {
     RequestType.WRITE: lambda request, user_id, board_model: write_list(request, board_model, user_id),

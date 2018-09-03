@@ -2,7 +2,10 @@ from typing import Optional
 import peewee
 from peewee import DoesNotExist
 
-from beb_lib.domain_entities import AccessType, CardsList, Board, Card
+from beb_lib.domain_entities.board import Board
+from beb_lib.domain_entities.card import Card
+from beb_lib.domain_entities.card_list import CardsList
+from beb_lib.domain_entities.supporting import AccessType
 from beb_lib.provider_interfaces import RequestType
 from beb_lib.storage.models import (BaseModel,
                                     BoardModel,
@@ -10,7 +13,8 @@ from beb_lib.storage.models import (BaseModel,
                                     BoardUserAccess,
                                     CardListUserAccess,
                                     CardModel,
-                                    CardUserAccess)
+                                    CardUserAccess
+                                    )
 
 
 def _create_access_type(query: peewee.ModelSelect):
