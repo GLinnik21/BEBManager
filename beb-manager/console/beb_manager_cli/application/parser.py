@@ -38,13 +38,11 @@ class CLIParser:
         args = self.parser.parse_args(args)
         return args
 
-    # Available objects are:
-    #    list      Operate lists. Lists contain cards.
-    #    tag
-
     def _add_all_parsers(self):
-        self._add_card_parser()
         self._add_user_parser()
+        self._add_card_parser()
+        self._add_tag_parser()
+        self._add_list_parser()
         self._add_board_parser()
 
     def _add_card_parser(self):
@@ -145,6 +143,36 @@ class CLIParser:
         parser_access_card.add_argument('-uid', '--user_id', help='the id of the user').required = True
         parser_access_card.add_argument('mode', metavar="\033[4mmode\033[0m", help='access mode (+rw, ~rw)')
 
+    def _add_tag_parser(self):
+        tag_parser = self.object_subparsers.add_parser('tag',
+                                                       description='Operate tags. Tags are used to group tasks even '
+                                                                   'from different lists',
+                                                       help='Operate tags. Tags are used to group tasks even '
+                                                            'from different lists')
+        tag_subparsers = tag_parser.add_subparsers(dest='command',
+                                                   metavar="<command>",
+                                                   title="commands that applicable to tags")
+        tag_subparsers.required = True
+
+        parser_display_tag = tag_subparsers.add_parser('display',
+                                                       description='Display tags', help='display tags')
+        parser_display_tag_group = parser_display_tag.add_mutually_exclusive_group()
+        parser_display_tag_group.required = True
+
+        parser_display_tag_group.add_argument('-a', '--all', help='display all tags', action='store_true')
+        parser_display_tag_group.add_argument('-i', '--id', type=int, help='display tag with the particular id')
+        parser_display_tag_group.add_argument('-n', '--name', help='display tag with the particular name')
+
+        parser_add_tag = tag_subparsers.add_parser('add', description='Add tag', help='add tag')
+        parser_add_tag.add_argument('name', help='name of the tag')
+
+        parser_edit_tag = tag_subparsers.add_parser('edit', description='Edit list', help='edit list')
+        parser_edit_tag.add_argument('id', help='the id of the list to edit')
+        parser_edit_tag.add_argument('-n', '--name', help='the new name of the list')
+
+        parser_delete_tag = tag_subparsers.add_parser('delete', description='Delete tag', help='delete tag')
+        parser_delete_tag.add_argument('id', type=int, help='the id of the tag')
+
     def _add_user_parser(self):
         user_parser = self.object_subparsers.add_parser('user',
                                                         description="Operate users. Users may own and have different "
@@ -177,6 +205,41 @@ class CLIParser:
                                    help='logout from current user')
 
         user_subparsers.add_parser('all', description='Display all users', help='display all users')
+
+    def _add_list_parser(self):
+        list_parser = self.object_subparsers.add_parser('list',
+                                                        description='Operate list. Lists contain cards',
+                                                        help='Operate list. Lists contain cards')
+        list_subparsers = list_parser.add_subparsers(dest='command',
+                                                     metavar="<command>",
+                                                     title="commands that applicable to lists")
+        list_subparsers.required = True
+
+        parser_display_list = list_subparsers.add_parser('display',
+                                                         description='Display lists', help='display lists')
+        parser_display_list_group = parser_display_list.add_mutually_exclusive_group()
+        parser_display_list_group.required = True
+
+        parser_display_list_group.add_argument('-a', '--all', help='display all lists', action='store_true')
+        parser_display_list_group.add_argument('-i', '--id', type=int, help='display lists with the particular id')
+        parser_display_list_group.add_argument('-n', '--name', help='display lists with the particular name')
+
+        parser_add_list = list_subparsers.add_parser('add', description='Add list', help='add list')
+        parser_add_list.add_argument('name', help='name of the list')
+
+        parser_edit_list = list_subparsers.add_parser('edit', description='Edit list', help='edit list')
+        parser_edit_list.add_argument('id', help='the id of the list to edit')
+        parser_edit_list.add_argument('-n', '--name', help='the new name of the list')
+
+        parser_delete_list = list_subparsers.add_parser('delete', description='Delete list', help='delete list')
+        parser_delete_list.add_argument('id', type=int, help='the id of the list')
+
+        parser_access_list = list_subparsers.add_parser('access',
+                                                        description='Configure access to list',
+                                                        help='configure access to list')
+        parser_access_list.add_argument('-lid', '--list_id', help='the id of the list').required = True
+        parser_access_list.add_argument('-uid', '--user_id', help='the id of the user').required = True
+        parser_access_list.add_argument('mode', metavar="\033[4mmode\033[0m", help='access mode (+rw, ~rw)')
 
     def _add_board_parser(self):
         board_parser = self.object_subparsers.add_parser('board',
