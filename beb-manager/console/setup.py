@@ -11,5 +11,5 @@ setup(
     packages=find_packages(),
     entry_points='''
     [console_scripts]
-    beb-manager=application.main:main'''
+    beb-manager=beb_manager_cli.application.main:main'''
 )

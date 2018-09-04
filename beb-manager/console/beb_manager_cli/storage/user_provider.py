@@ -1,16 +1,17 @@
 from collections import namedtuple
+
 from peewee import SqliteDatabase
 from enum import IntEnum, unique, auto
 
-from beb_lib import (IProvider,
-                     IStorageProviderProtocol,
-                     RequestType,
-                     REQUEST_BASE_FIELDS,
-                     RESPONSE_BASE_FIELDS,
-                     BaseError)
-from .user import (User,
-                   create_user_from_orm,
-                   DATABASE_PROXY)
+from beb_lib.storage.provider_protocol import IStorageProviderProtocol
+from beb_lib.provider_interfaces import (REQUEST_BASE_FIELDS,
+                                         RESPONSE_BASE_FIELDS,
+                                         IProvider,
+                                         BaseError,
+                                         RequestType
+                                         )
+
+from beb_manager_cli.storage.user import DATABASE_PROXY, User, create_user_from_orm
 
 UserDataRequest = namedtuple('UserDataRequest', REQUEST_BASE_FIELDS + ['id', 'name'])
 UserDataResponse = namedtuple('UserDataResponse', RESPONSE_BASE_FIELDS + ['users'])
@@ -23,7 +24,7 @@ class UserProviderErrorCodes(IntEnum):
 
 class UserProvider(IProvider, IStorageProviderProtocol):
     """
-    Instance to interact with user data base that relates to cli layer
+    Instance to interact with user data base that relates to beb_manager_cli layer
     """
 
     def __init__(self, path_to_db):

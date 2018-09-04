@@ -20,7 +20,6 @@ METHOD_MAP = {
 
 def write_plan(request: PlanDataRequest, user_id: int, card: CardModel) -> (Plan, BaseError):
     if bool(check_access_to_card(card, user_id) & AccessType.WRITE):
-        plan_model = None
         try:
             plan_model = PlanModel.get(PlanModel.card == card)
             plan_model.interval = request.interval.total_seconds()

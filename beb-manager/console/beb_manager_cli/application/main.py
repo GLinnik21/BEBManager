@@ -1,9 +1,9 @@
 import os
 import sys
 
-from application import (CLIParser,
-                         config,
-                         App)
+import beb_manager_cli.application.config as config
+from beb_manager_cli.application.app import App
+from beb_manager_cli.application.parser import CLIParser
 
 
 def main():

@@ -1,7 +1,8 @@
 from peewee import (Model,
                     PrimaryKeyField,
                     CharField,
-                    Proxy)
+                    Proxy
+                    )
 
 DATABASE_PROXY = Proxy()
 

@@ -1,17 +1,17 @@
 import random
 from typing import List, Optional
 
-from application import config, AuthorizationManager, WorkingBoardManager
-import beb_lib
-from beb_lib import (Model,
-                     BaseError,
-                     Board,
-                     AccessType,
-                     RequestType)
-from storage import (UserProvider,
-                     UserDataRequest,
-                     UserInstance)
-from storage.user_provider import UserProviderErrorCodes
+import beb_lib.model.exceptions as beb_lib_exceptions
+from beb_lib.domain_entities.board import Board
+from beb_lib.domain_entities.supporting import AccessType
+from beb_lib.model.model import Model
+from beb_lib.provider_interfaces import RequestType, BaseError
+
+import beb_manager_cli.application.config as config
+from beb_manager_cli.application.authorization_manager import AuthorizationManager
+from beb_manager_cli.application.working_board_manager import WorkingBoardManager
+from beb_manager_cli.storage.user import UserInstance
+from beb_manager_cli.storage.user_provider import UserProvider, UserDataRequest, UserProviderErrorCodes
 
 
 def check_authorization(func):
@@ -163,7 +163,7 @@ class App:
             else:
                 print("There are no boards created.")
                 quit()
-        except beb_lib.Error as error:
+        except beb_lib_exceptions.Error as error:
             print(error)
             quit(1)
 
@@ -172,7 +172,7 @@ class App:
         try:
             boards = self.lib_model.board_read(board_id, board_name, self.authorization_manager.get_current_user_id())
             return boards[0]
-        except beb_lib.Error as error:
+        except beb_lib_exceptions.Error as error:
             print(error)
             quit(1)
 
@@ -185,12 +185,12 @@ class App:
             boards = self.lib_model.board_read(board_name=board_name,
                                                request_user_id=self.authorization_manager.get_current_user_id())
 
-        except beb_lib.AccessDeniedError:
+        except beb_lib_exceptions.AccessDeniedError:
             print("This user can't create board with such name")
             quit(1)
-        except beb_lib.BoardDoesNotExistError:
+        except beb_lib_exceptions.BoardDoesNotExistError:
             pass
-        except beb_lib.Error as error:
+        except beb_lib_exceptions.Error as error:
             print(error)
             quit(1)
 
@@ -201,7 +201,7 @@ class App:
         try:
             self.lib_model.board_write(board_name=board_name,
                                        request_user_id=self.authorization_manager.get_current_user_id())
-        except beb_lib.Error as error:
+        except beb_lib_exceptions.Error as error:
             print(error)
             quit(1)
 
@@ -209,7 +209,7 @@ class App:
     def delete_board(self, board_id: int) -> None:
         try:
             self.lib_model.board_delete(board_id, None, self.authorization_manager.get_current_user_id())
-        except beb_lib.Error as error:
+        except beb_lib_exceptions.Error as error:
             print(error)
             quit(1)
 
@@ -218,7 +218,7 @@ class App:
         board = self.get_board(board_id, None)
         try:
             self.lib_model.board_write(board.unique_id, new_name, self.authorization_manager.get_current_user_id())
-        except beb_lib.Error as error:
+        except beb_lib_exceptions.Error as error:
             print(error)
             quit(1)
 
@@ -226,7 +226,7 @@ class App:
     def switch_board(self, board_id: int):
         try:
             self.lib_model.board_read(board_id, None, self.authorization_manager.get_current_user_id())
-        except beb_lib.Error as error:
+        except beb_lib_exceptions.Error as error:
             print(error)
             quit(1)
 
