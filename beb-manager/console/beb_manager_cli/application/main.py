@@ -60,5 +60,4 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.argv = 'beb-manager board add HEH'.split()
     main()

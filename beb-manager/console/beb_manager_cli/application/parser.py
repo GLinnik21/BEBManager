@@ -2,12 +2,25 @@ import argparse
 from datetime import datetime
 
 
-def validate_date(s):
-    try:
-        return datetime.strptime(s, '%Y-%m-%d,%H:%M')
-    except ValueError:
-        msg = "Not valid date: '{}'.".format(s)
-        raise argparse.ArgumentTypeError(msg)
+class ValidateDateAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        try:
+            datetime.strptime(values, '%Y-%m-%d,%H:%M')
+            namespace.EXPIRATION_DATE = values
+        except ValueError:
+            try:
+                datetime.strptime(values, '%Y-%m-%d')
+                namespace.EXPIRATION_DATE = values + ",9:00"
+            except ValueError:
+                parser.error("Not valid date: '{}'.".format(values))
+
+
+class ValidateStartAtUsageAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        if namespace.repeat is None:
+            parser.error("[-sa START_REPEAT_AT] should be used only with [-r REPEAT]")
+        else:
+            namespace.start_repeat_at = values
 
 
 class CLIParser:
@@ -26,15 +39,111 @@ class CLIParser:
         return args
 
     # Available objects are:
-    #    board     Operate boards. Boards contain lists of cards
     #    list      Operate lists. Lists contain cards.
-    #    card      Operate cards. Cards are the basic structure that's meant to represent one task
-    #    user      Operate users. Users may own and have different access to cards, lists, etc.
+    #    tag
 
     def _add_all_parsers(self):
-        # self._add_card_parser()
+        self._add_card_parser()
         self._add_user_parser()
         self._add_board_parser()
+
+    def _add_card_parser(self):
+        card_parser = self.object_subparsers.add_parser('card',
+                                                        description="Operate cards. Cards are the basic structure "
+                                                                    "that's meant to represent one task",
+                                                        help="Operate cards. Cards are the basic structure "
+                                                             "that's meant to represent one task")
+        card_subparsers = card_parser.add_subparsers(dest='command',
+                                                     metavar="<command>",
+                                                     title="commands that applicable to cards")
+        card_subparsers.required = True
+
+        cards_creation_parser = card_subparsers.add_parser('add', description='Add card', help='Add card')
+        cards_creation_list_group = cards_creation_parser.add_mutually_exclusive_group()
+        cards_creation_list_group.required = True
+
+        cards_creation_parser.add_argument('name', help='name of the new card')
+        cards_creation_list_group.add_argument('-lid', '--list_id',
+                                               help='unique id of list where the card would be stored')
+        cards_creation_list_group.add_argument('-ln', '--list_name',
+                                               help='name of list where the card would be stored')
+
+        cards_creation_parser.add_argument('-d', '--description', help='description of the task in the card')
+        cards_creation_parser.add_argument('-p', '--priority', choices=['low', 'medium', 'high'], default='medium',
+                                           help='priority of the card (default is "medium")')
+        cards_creation_parser.add_argument('-t', '--tags', help='name of the tags to add')
+        cards_creation_parser.add_argument("-e", "--expiration_date",
+                                           help="The Expiration Date - format YYYY-MM-DD,hh:mm",
+                                           action=ValidateDateAction)
+        cards_creation_plan_group = cards_creation_parser.add_argument_group('plan',
+                                                                             'Arguments to configure periodical task')
+        cards_creation_plan_group.required = False
+        cards_creation_plan_group.add_argument('-r',
+                                               '--repeat',
+                                               help="Creates repeated card according to interval. E.g. repeat 'every "
+                                                    "1 week'")
+        cards_creation_plan_group.add_argument('-sa',
+                                               '--start_repeat_at',
+                                               help="Start date time for repeated card. E.g. --sa 'in 3 days'",
+                                               action=ValidateStartAtUsageAction)
+
+        card_editing_parser = card_subparsers.add_parser('edit', description='Change card', help='Change card')
+        cards_editing_list_group = card_editing_parser.add_mutually_exclusive_group()
+        cards_editing_list_group.required = True
+
+        card_editing_parser.add_argument('card_id', help='unique identifier of the card that should be edited')
+        cards_editing_list_group.add_argument('-lid', '--list_id',
+                                              help='unique id of list where the card would be stored')
+        cards_editing_list_group.add_argument('-ln', '--list_name',
+                                              help='name of list where the card would be stored')
+        card_editing_parser.add_argument('-n', '--name')
+
+        card_editing_parser.add_argument('-d', '--description', help='description of the task in the card')
+        card_editing_parser.add_argument('-p', '--priority', choices=['low', 'medium', 'high'],
+                                         help='priority of the card')
+        card_editing_parser_tag_group = card_editing_parser.add_mutually_exclusive_group()
+        card_editing_parser_tag_group.add_argument('-at', '--add_tags', help='name of the tags to add')
+        card_editing_parser_tag_group.add_argument('-rt', '--remove_tags', help='name of the tags to remove')
+        card_editing_parser.add_argument("-e", "--expiration_date",
+                                         help="The Expiration Date - format YYYY-MM-DD,hh:mm",
+                                         action=ValidateDateAction)
+        card_editing_parser_plan = card_editing_parser.add_mutually_exclusive_group()
+        cards_editing_plan_group = card_editing_parser.add_argument_group('plan',
+                                                                          'Arguments to configure periodical task')
+        cards_editing_plan_group.add_argument('-r',
+                                              '--repeat',
+                                              help="Creates repeated card according to interval. E.g. repeat 'every "
+                                                   "1 week'")
+        cards_editing_plan_group.add_argument('-sa',
+                                              '--start_repeat_at',
+                                              help="Start date time for repeated card. E.g. --sa 'in 3 days'",
+                                              action=ValidateStartAtUsageAction)
+        card_editing_parser_plan.add_argument_group(cards_editing_plan_group)
+        card_editing_parser_plan.add_argument('-dp', '--delete_plan', help='Delete periodical card plan',
+                                              action='store_true')
+
+        card_display_parser = card_subparsers.add_parser('display', description='Display card', help='display card')
+        parser_display_card_group = card_display_parser.add_mutually_exclusive_group()
+        parser_display_card_group.required = True
+        parser_display_card_group.add_argument('-i', '--id', type=int, help='display card with the particular id')
+        parser_display_card_group.add_argument('-n', '--name', help='display card with the particular name')
+        parser_display_card_group.add_argument('-c', '--created', help='display created cards by this user')
+        parser_display_card_group.add_argument('-as', '--assigned', help='display assigned cards')
+        parser_display_card_group.add_argument('-ar', '--archived', help='display archived cards')
+        parser_display_card_group.add_argument('-cr', '--can_read', help='display cards that user can read')
+        parser_display_card_group.add_argument('-cw', '--can_write', help='display cards that user can write')
+
+        card_assign_parser = card_subparsers.add_parser('assign', description='Assign card', help='assign card')
+        card_assign_parser.add_argument('-cid', '--card_id', help='identifier of the task to assign').required = True
+        card_assign_parser.add_argument('-uid', '--user_id',
+                                        help='identifier of the user who this card would be assigned').required = True
+
+        parser_access_card = card_subparsers.add_parser('access',
+                                                        description='Configure access to card',
+                                                        help='configure access to card')
+        parser_access_card.add_argument('-cid', '--card_id', help='the id of the card').required = True
+        parser_access_card.add_argument('-uid', '--user_id', help='the id of the user').required = True
+        parser_access_card.add_argument('mode', metavar="\033[4mmode\033[0m", help='access mode (+rw, ~rw)')
 
     def _add_user_parser(self):
         user_parser = self.object_subparsers.add_parser('user',
@@ -69,52 +178,6 @@ class CLIParser:
 
         user_subparsers.add_parser('all', description='Display all users', help='display all users')
 
-    def _add_card_parser(self):
-        card_parser = self.object_subparsers.add_parser('card',
-                                                        description="Operate cards. Cards are the basic structure "
-                                                                    "that's meant to represent one task",
-                                                        help="Operate cards. Cards are the basic structure "
-                                                             "that's meant to represent one task")
-        card_subparsers = card_parser.add_subparsers(dest='command',
-                                                     metavar="<command>",
-                                                     title="commands that applicable to cards")
-        card_subparsers.required = True
-
-        card_display_parser = card_subparsers.add_parser('display', description='Display card', help='Display card')
-        card_display_group = card_display_parser.add_mutually_exclusive_group()
-        card_display_group.required = True
-
-        card_display_group.add_argument('-i', '--id', help='unique id of card')
-        card_display_group.add_argument('-n', '--name', help='name of card (if not unique, all variants with ids '
-                                                             'would be displayed)')
-        card_display_parser.add_argument('-v', '--verbose', help='output details', action='store_true')
-
-        card_deletion_parser = card_subparsers.add_parser('delete', description='Delete card')
-        card_deletion_group = card_deletion_parser.add_mutually_exclusive_group()
-        card_deletion_group.add_argument('-i', '--id', help='unique id of card')
-        card_deletion_group.add_argument('-n', '--name', help='name of card (if not unique, all variants with ids '
-                                                              'would be displayed)')
-
-        cards_creation_parser = card_subparsers.add_parser('create', description='Create card', help='Create card')
-        cards_creation_parser.add_argument('list_id', help='unique id of list where the card would be stored')
-        cards_creation_parser.add_argument('name', help='name of the new card')
-        cards_creation_parser.add_argument('-d', '--description', help='description of the task in the card')
-        cards_creation_parser.add_argument('-p', '--priority', choices=['low', 'medium', 'high'], default='medium',
-                                           help='priority of the card (default is "medium")')
-        cards_creation_parser.add_argument("-e", "--expiration_date",
-                                           help="The Expiration Date - format YYYY-MM-DD,hh:mm",
-                                           type=validate_date)
-
-        card_editing_parser = card_subparsers.add_parser('edit', description='Change card', help='Change card')
-        card_editing_parser.add_argument('-n', '--name')
-        card_editing_parser.add_argument('-d', '--description')
-        card_editing_parser.add_argument('-p', '--priority', choices=['low', 'medium', 'high'], default='medium',
-                                         help='priority of the card (default is "medium")')
-        card_editing_parser.add_argument("-e", "--expiration_date",
-                                         help="The Expiration Date - format YYYY-MM-DD,hh:mm",
-                                         type=validate_date)
-        card_editing_parser.add_argument('card_id')
-
     def _add_board_parser(self):
         board_parser = self.object_subparsers.add_parser('board',
                                                          description='Operate boards. Boards contain lists of cards',
@@ -137,12 +200,12 @@ class CLIParser:
         parser_add_board = board_subparsers.add_parser('add', description='Add board', help='add board')
         parser_add_board.add_argument('name', help='name of the board')
 
-        parser_delete_board = board_subparsers.add_parser('delete', description='Delete board', help='delete board')
-        parser_delete_board.add_argument('id', type=int, help='the id of the board')
-
         parser_edit_board = board_subparsers.add_parser('edit', description='Edit board', help='edit board')
         parser_edit_board.add_argument('id', help='the id of the board to edit')
         parser_edit_board.add_argument('-n', '--name', help='the new name of the board')
+
+        parser_delete_board = board_subparsers.add_parser('delete', description='Delete board', help='delete board')
+        parser_delete_board.add_argument('id', type=int, help='the id of the board')
 
         parser_delete_board = board_subparsers.add_parser('switch',
                                                           description='Switch to board', help='switch to board')
@@ -154,4 +217,3 @@ class CLIParser:
         parser_access_board.add_argument('-bid', '--board_id', help='the id of the board').required = True
         parser_access_board.add_argument('-uid', '--user_id', help='the id of the user').required = True
         parser_access_board.add_argument('mode', metavar="\033[4mmode\033[0m", help='access mode (+rw, ~rw)')
-
