@@ -60,7 +60,7 @@ def read_board(request: BoardDataRequest, user_id: int) -> (List[Board], BaseErr
             if bool(check_access_to_board(board, user_id) & AccessType.READ):
                 lists = [list_id for list_id in board.card_lists]
                 board_response += [Board(board.name, board.id, lists)]
-            return board_response, None
+        return board_response, None
     else:
         try:
             board = BoardModel.get((BoardModel.id == request.id) | (BoardModel.name == request.name))
@@ -95,5 +95,5 @@ def delete_board(request: BoardDataRequest, user_id: int) -> (List[Board], BaseE
 def process_board_call(request: BoardDataRequest) -> (BoardDataResponse, BaseError):
     user_id = request.request_user_id
 
-    board_response = METHOD_MAP[request.request_type](request, user_id)
-    return BoardDataResponse(boards=board_response, request_id=request.request_id), None
+    board_response, error = METHOD_MAP[request.request_type](request, user_id)
+    return BoardDataResponse(boards=board_response, request_id=request.request_id), error

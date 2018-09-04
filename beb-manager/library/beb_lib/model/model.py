@@ -1,6 +1,6 @@
 import datetime
 import random
-from typing import List
+from typing import List, Optional
 
 from beb_lib.domain_entities.board import Board
 from beb_lib.domain_entities.card import Card
@@ -43,7 +43,7 @@ class Model:
 
     def add_right(self, object_id: int, object_type: type, user_id: int, access_type: AccessType):
         request = AddAccessRightRequest(request_id=random.randrange(1000000),
-                                        request_type=None,
+                                        request_type=RequestType.WRITE,
                                         object_id=object_id,
                                         object_type=object_type,
                                         user_id=user_id,
@@ -53,7 +53,7 @@ class Model:
 
     def remove_right(self, object_id: int, object_type: type, user_id: int, access_type: AccessType):
         request = RemoveAccessRightRequest(request_id=random.randrange(1000000),
-                                           request_type=None,
+                                           request_type=RequestType.WRITE,
                                            object_id=object_id,
                                            object_type=object_type,
                                            user_id=user_id,
@@ -117,12 +117,12 @@ class Model:
                 raise Error("""Undefined DB exception! 
                 Code: {} Description: {}""".format(error.code, error.description))
 
-    def list_read(self, list_id: int = None, list_name: str = None,
+    def list_read(self, board_id: Optional[int], list_id: int = None, list_name: str = None,
                   request_user_id: int = None) -> List[CardsList]:
         request = ListDataRequest(request_id=random.randrange(1000000),
                                   request_user_id=request_user_id,
                                   id=list_id,
-                                  board_id=None,
+                                  board_id=board_id,
                                   name=list_name,
                                   request_type=RequestType.READ)
 
@@ -179,7 +179,7 @@ class Model:
                 raise Error("""Undefined DB exception! 
                 Code: {} Description: {}""".format(error.code, error.description))
 
-    def card_read(self, card_id: int = None, card_name: str = None,
+    def card_read(self, list_id: Optional[int], card_id: int = None, card_name: str = None,
                   request_user_id: int = None) -> List[Card]:
         request = CardDataRequest(request_id=random.randrange(1000000),
                                   id=card_id,
@@ -191,7 +191,7 @@ class Model:
                                   assignee=None,
                                   children=None,
                                   tags=None,
-                                  list_id=None,
+                                  list_id=list_id,
                                   request_type=RequestType.READ)
 
         response, error = self.storage_provider.execute(request)
@@ -204,6 +204,12 @@ class Model:
             else:
                 raise Error("""Undefined DB exception! 
                                 Code: {} Description: {}""".format(error.code, error.description))
+
+        for card in response.cards:
+            try:
+                card.plan = self.plan_read(card.user_id, request_user_id)
+            except Error:
+                pass
 
         return response.cards
 
@@ -315,7 +321,7 @@ class Model:
                                   card_id=card_id,
                                   request_type=RequestType.READ)
 
-        plan, error = self.storage_provider.execute(request)
+        response, error = self.storage_provider.execute(request)
 
         if error is not None:
             if error.code == StorageProviderErrors.ACCESS_DENIED:
@@ -328,7 +334,7 @@ class Model:
                 raise Error("""Undefined DB exception! 
                             Code: {} Description: {}""".format(error.code, error.description))
 
-        return plan
+        return response.plan
 
     def plan_write(self, card_id: int, user_id: int, interval: datetime.timedelta,
                    last_created: datetime.datetime) -> Plan:
@@ -339,7 +345,7 @@ class Model:
                                   card_id=card_id,
                                   request_type=RequestType.WRITE)
 
-        plan, error = self.storage_provider.execute(request)
+        response, error = self.storage_provider.execute(request)
 
         if error is not None:
             if error.code == StorageProviderErrors.ACCESS_DENIED:
@@ -350,7 +356,7 @@ class Model:
                 raise Error("""Undefined DB exception! 
                                     Code: {} Description: {}""".format(error.code, error.description))
 
-        return plan
+        return response.plan
 
     def plan_delete(self, card_id: int, user_id: int) -> None:
         request = PlanDataRequest(request_id=random.randrange(1000000),
@@ -360,7 +366,7 @@ class Model:
                                   card_id=card_id,
                                   request_type=RequestType.DELETE)
 
-        plan, error = self.storage_provider.execute(request)
+        response, error = self.storage_provider.execute(request)
 
         if error is not None:
             if error.code == StorageProviderErrors.ACCESS_DENIED:
@@ -380,16 +386,7 @@ class Model:
         cards = self.card_read(card_id, card_name, request_user_id)
         self.card_write(self.storage_provider.archived_list_id, cards[0], request_user_id)
 
-    def get_cards_in_list(self, list_id: int, request_user_id: int) -> List[Card]:
-        card_list = self.list_read(list_id=list_id, request_user_id=request_user_id)[0]
-        return [self.card_read(card_id=card_id, request_user_id=request_user_id)[0] for card_id in card_list.cards]
-
-    def get_archived_cards(self, request_user_id: int = None) -> List[Card]:
-        return self.get_cards_in_list(self.storage_provider.archived_list_id, request_user_id)
+    # def get_archived_cards(self, request_user_id: int = None) -> List[Card]:
+    #     return self.get_cards_in_list(self.storage_provider.archived_list_id, request_user_id)
 
     # end region
-
-
-if __name__ == '__main__':
-    model = Model("/Users/gleblinnik/Developer/isp/beb-manager/library/db.db")
-    print(model.plan_write(1, 1, datetime.timedelta(days=5), datetime.datetime.fromtimestamp(100000)))

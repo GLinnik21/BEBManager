@@ -18,7 +18,6 @@ def main():
     parser = CLIParser()
     args = parser.parse()
     app = App()
-
     if args.object == 'user':
         if args.command == 'current':
             app.print_current_user()
@@ -30,8 +29,6 @@ def main():
             app.logout_user()
         elif args.command == 'all':
             app.print_all_users()
-    elif args.object == 'card':
-        pass
     elif args.object == 'board':
         if args.command == 'display':
             if args.all:
@@ -57,6 +54,16 @@ def main():
             else:
                 print("Invalid \033[4mmode\033[0m format")
                 exit(2)
+    elif args.object == 'list':
+        if args.command == 'display':
+            if args.all:
+                app.print_all_lists()
+            else:
+                app.print_list(args.id, args.name)
+    elif args.object == 'card':
+        pass
+    elif args.object == 'tag':
+        pass
 
 
 if __name__ == '__main__':

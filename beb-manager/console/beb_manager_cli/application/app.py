@@ -3,7 +3,8 @@ from typing import List, Optional
 
 import beb_lib.model.exceptions as beb_lib_exceptions
 from beb_lib.domain_entities.board import Board
-from beb_lib.domain_entities.supporting import AccessType
+from beb_lib.domain_entities.card import Card
+from beb_lib.domain_entities.supporting import AccessType, Priority
 from beb_lib.model.model import Model
 from beb_lib.provider_interfaces import RequestType, BaseError
 
@@ -20,9 +21,19 @@ def check_authorization(func):
             print('Authorize first!')
             quit(1)
         else:
-            func(self, *args, **kwargs)
+            return func(self, *args, **kwargs)
 
     return wrapper
+
+
+def bordered(text):
+    lines = text.splitlines()
+    width = max(len(s) for s in lines)
+    res = ['┌' + '─' * width + '┐']
+    for s in lines:
+        res.append('│' + (s + ' ' * width)[:width] + '│')
+    res.append('└' + '─' * width + '┘')
+    return '\n'.join(res)
 
 
 class App:
@@ -136,6 +147,49 @@ class App:
         for user in users:
             print("UserID: {}   Name: {}".format(user.unique_id, user.name))
 
+    def _print_card(self, card: Card):
+        text = "CardID: {}   Name: {}".format(card.user_id, card.name)
+        if card.description is not None:
+            text += "\nDescription: {}".format(card.description)
+
+        try:
+            priority = Priority(card.priority).name
+        except ValueError:
+            priority = str(card.priority)
+
+        text += ("\nPriority: " + priority)
+        user = self.get_user(card.user_id, None)
+        if user is not None:
+            text += "\nOwner: {} aka {}".format(card.user_id, self.get_user(card.user_id, None).name)
+        else:
+            text += "\nOwner: {}".format(card.user_id)
+        if card.assignee_id is not None:
+            assignee = self.get_user(card.assignee_id, None)
+            if assignee is not None:
+                text += "\nAssignee: {} aka {}".format(card.assignee_id,
+                                                       self.get_user(card.assignee_id, None).name)
+            else:
+                text += "\nAssignee: {}".format(card.assignee_id)
+
+        if len(card.children) > 0:
+            text += "\nChildren cards: {}".format(card.children)
+
+        if len(card.tags) > 0:
+            try:
+                tags = [self.lib_model.tag_read(tag)[0].name for tag in card.tags]
+                text += "\nTags: {}".format(tags)
+            except beb_lib_exceptions.TagDoesNotExistError:
+                pass
+
+        text += "\nCreated: {}".format(card.created.strftime("%A %d. %B %Y"))
+        text += "\nModified: {}".format(card.last_modified.strftime("%A %d. %B %Y"))
+        if card.plan is not None:
+            plan_text = "Periodical task plan"
+            plan_text += "\nRepeats every: {}".format(card.plan.interval)
+            plan_text += "\nLast created at: {}".format(card.plan.last_created_at.strftime("%A %d. %B %Y"))
+            text += ("\n" + bordered(plan_text))
+        print(bordered(text))
+
     @staticmethod
     def _print_boards(boards: List[Board]) -> None:
         for board in boards:
@@ -148,11 +202,21 @@ class App:
             print("You're not currently switched to any board")
             quit()
         else:
-            App._print_boards([self.get_board(board_id, None)])
+            self.print_board(board_id, None)
 
     @check_authorization
-    def print_board(self, board_id: int, board_name: str):
-        App._print_boards([self.get_board(board_id, board_name)])
+    def print_board(self, board_id: Optional[int], board_name: Optional[str]):
+        board = self.get_board(board_id, board_name)
+        App._print_boards([board])
+
+        if len(board.lists) > 0:
+            print("\nLists in this board:")
+            card_lists = self.lib_model.list_read(board.unique_id,
+                                                  request_user_id=self.authorization_manager.get_current_user_id())
+            for card_list in card_lists:
+                print("ListID: {}   Name: {}".format(card_list.unique_id, card_list.name))
+        else:
+            print("There are no lists in this board")
 
     @check_authorization
     def print_all_boards(self):
@@ -251,3 +315,22 @@ class App:
             access_type |= AccessType.READ
 
         self.lib_model.remove_right(board_id, Board, user_id, access_type)
+
+    def print_all_lists(self):
+        self.print_current_board()
+
+    def print_list(self, list_id: int, list_name: str):
+        card_list = self.lib_model.list_read(None, list_id, list_name,
+                                             request_user_id=self.authorization_manager.get_current_user_id())[0]
+        print("ListID: {}   Name: {}".format(card_list.unique_id, card_list.name))
+        try:
+            cards = self.lib_model.card_read(list_id, request_user_id=self.authorization_manager.get_current_user_id())
+
+            if len(cards) > 0:
+                for card in cards:
+                    self._print_card(card)
+            else:
+                print("There are no cards in this list")
+        except beb_lib_exceptions.Error as error:
+            print(error)
+            quit(1)

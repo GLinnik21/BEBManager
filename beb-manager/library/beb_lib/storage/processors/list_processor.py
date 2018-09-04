@@ -18,7 +18,7 @@ from beb_lib.storage.provider_requests import (BoardDataRequest)
 
 METHOD_MAP = {
     RequestType.WRITE: lambda request, user_id, board_model: write_list(request, board_model, user_id),
-    RequestType.READ: lambda request, user_id, board_model: read_list(request, user_id),
+    RequestType.READ: lambda request, user_id, board_model: read_list(request, user_id, board_model),
     RequestType.DELETE: lambda request, user_id, board_model: delete_list(request, user_id)
 }
 
@@ -56,14 +56,20 @@ def write_list(request: BoardDataRequest, board: BoardModel, user_id: int) -> (L
                                                                                  "this board")
 
 
-def read_list(request: BoardDataRequest, user_id: int) -> (List[CardsList], BaseError):
+def read_list(request: BoardDataRequest, board: BoardModel, user_id: int) -> (List[CardsList], BaseError):
     if request.id is None and request.name is None:
         list_response = []
-        query = CardListModel.select()
+
+        if board is None:
+            query = CardListModel.select()
+        else:
+            query = CardListModel.select().where(CardListModel.board == board)
+
         for card_list in query:
             if bool(check_access_to_list(card_list, user_id) & AccessType.READ):
                 cards = [card_id for card_id in card_list.cards]
                 list_response += [CardsList(card_list.name, card_list.id, cards)]
+        return list_response, None
     else:
         try:
             card_list = CardListModel.get((CardListModel.id == request.id) |

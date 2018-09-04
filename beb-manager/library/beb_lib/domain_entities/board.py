@@ -24,5 +24,5 @@ class Board(UniqueObject):
         self._lists = lists
 
     @property
-    def cards(self):
+    def lists(self):
         return self._lists

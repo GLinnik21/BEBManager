@@ -40,7 +40,8 @@ def read_plan(user_id: int, card: CardModel) -> (Plan, BaseError):
         try:
             plan_model = PlanModel.get(PlanModel.card == card)
             return Plan(datetime.timedelta(seconds=plan_model.interval),
-                        card_id=card.id, last_created_at=plan_model.last_created_at)
+                        card.id,
+                        datetime.datetime.fromtimestamp(plan_model.last_created_at / 1e3), plan_model.id), None
         except DoesNotExist:
             return None, BaseError(code=provider.StorageProviderErrors.PLAN_DOES_NOT_EXIST,
                                    description="There is no plan for this task")

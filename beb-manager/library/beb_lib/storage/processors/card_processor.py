@@ -1,3 +1,4 @@
+import datetime
 from collections import namedtuple
 from typing import List
 
@@ -22,7 +23,7 @@ from beb_lib.storage.access_validator import (check_access_to_list,
 
 METHOD_MAP = {
     RequestType.WRITE: lambda request, user_id, list_model: write_card(request, user_id, list_model),
-    RequestType.READ: lambda request, user_id, list_model: read_card(request, user_id),
+    RequestType.READ: lambda request, user_id, list_model: read_card(request, user_id, list_model),
     RequestType.DELETE: lambda request, user_id, list_model: delete_card(request, user_id)
 }
 
@@ -47,7 +48,8 @@ def _create_card_from_orm(card_model: CardModel) -> Card:
     return Card(card_model.name, card_model.id, card_model.user_id,
                 card_model.assignee_id, card_model.description,
                 card_model.expiration_date, card_model.priority,
-                children, tags, card_model.created, card_model.last_modified)
+                children, tags, datetime.datetime.fromtimestamp(card_model.created / 1e3),
+                datetime.datetime.fromtimestamp(card_model.last_modified / 1e3))
 
 
 def write_card(request: CardDataRequest, user_id: int, card_list: CardListModel) -> (List[Card], BaseError):
@@ -119,10 +121,15 @@ def write_card(request: CardDataRequest, user_id: int, card_list: CardListModel)
                                                                                  "this list")
 
 
-def read_card(request: CardDataRequest, user_id: int) -> (List[Card], BaseError):
+def read_card(request: CardDataRequest, user_id: int, card_list: CardListModel) -> (List[Card], BaseError):
     if request.id is None and request.name is None:
         card_response = []
-        query = CardModel.select()
+
+        if card_list is None:
+            query = CardModel.select()
+        else:
+            query = CardModel.select().where(CardModel.list == card_list)
+
         for card in query:
             if bool(check_access_to_card(card, user_id) & AccessType.READ):
                 card_response += [_create_card_from_orm(card)]

@@ -220,7 +220,8 @@ class CLIParser:
         parser_display_list_group = parser_display_list.add_mutually_exclusive_group()
         parser_display_list_group.required = True
 
-        parser_display_list_group.add_argument('-a', '--all', help='display all lists', action='store_true')
+        parser_display_list_group.add_argument('-a', '--all', help='display all lists in current board',
+                                               action='store_true')
         parser_display_list_group.add_argument('-i', '--id', type=int, help='display lists with the particular id')
         parser_display_list_group.add_argument('-n', '--name', help='display lists with the particular name')
 
