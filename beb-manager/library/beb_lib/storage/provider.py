@@ -2,7 +2,7 @@ import enum
 from collections import namedtuple
 from peewee import SqliteDatabase
 
-from beb_lib.storage.access_validator import remove_right, add_right
+from beb_lib.storage.access_validator import remove_right, add_right, get_right
 from beb_lib.provider_interfaces import RESPONSE_BASE_FIELDS, IProvider, BaseError, RequestType
 from beb_lib.storage.provider_protocol import IStorageProviderProtocol
 from beb_lib.storage.models import (BoardModel,
@@ -23,7 +23,8 @@ from beb_lib.storage.provider_requests import (BoardDataRequest,
                                                RemoveAccessRightRequest,
                                                ListDataRequest,
                                                TagDataRequest,
-                                               PlanDataRequest
+                                               PlanDataRequest,
+                                               GetAccessRightRequest
                                                )
 
 BoardDataResponse = namedtuple('BoardDataResponse', RESPONSE_BASE_FIELDS + ['boards'])
@@ -72,7 +73,9 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
             AddAccessRightRequest: lambda request: add_right(request.object_type, request.object_id,
                                                              request.user_id, request.access_type),
             RemoveAccessRightRequest: lambda request: remove_right(request.object_type, request.object_id,
-                                                                   request.user_id, request.access_type)
+                                                                   request.user_id, request.access_type),
+            GetAccessRightRequest: lambda request: get_right(request.object_type, request.object_id,
+                                                             request.user_id)
         }
 
     def open(self) -> None:

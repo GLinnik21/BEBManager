@@ -1,4 +1,3 @@
-import datetime
 from collections import namedtuple
 from typing import List
 
@@ -8,6 +7,9 @@ import beb_lib.storage.provider as provider
 from beb_lib.domain_entities.card import Card
 from beb_lib.domain_entities.supporting import AccessType, Priority
 from beb_lib.provider_interfaces import RequestType, BaseError
+from beb_lib.storage.access_validator import (check_access_to_list,
+                                              check_access_to_card
+                                              )
 from beb_lib.storage.models import (CardListModel,
                                     TagModel,
                                     CardModel,
@@ -17,9 +19,6 @@ from beb_lib.storage.models import (CardListModel,
                                     PlanModel
                                     )
 from beb_lib.storage.provider_requests import (CardDataRequest)
-from beb_lib.storage.access_validator import (check_access_to_list,
-                                              check_access_to_card
-                                              )
 
 METHOD_MAP = {
     RequestType.WRITE: lambda request, user_id, list_model: write_card(request, user_id, list_model),
@@ -32,7 +31,7 @@ def _delete_card(card: CardModel):
     CardUserAccess.delete().where(CardUserAccess.card == card).execute()
     TagCard.delete().where(TagCard.card == card).execute()
     ParentChild.delete().where(ParentChild.parent == card).execute()
-    PlanModel.delete().where(PlanModel.card == card)
+    PlanModel.delete().where(PlanModel.card == card).execute()
     card.delete_instance()
 
 
@@ -48,8 +47,8 @@ def _create_card_from_orm(card_model: CardModel) -> Card:
     return Card(card_model.name, card_model.id, card_model.user_id,
                 card_model.assignee_id, card_model.description,
                 card_model.expiration_date, card_model.priority,
-                children, tags, datetime.datetime.fromtimestamp(card_model.created / 1e3),
-                datetime.datetime.fromtimestamp(card_model.last_modified / 1e3))
+                children, tags, card_model.created,
+                card_model.last_modified)
 
 
 def write_card(request: CardDataRequest, user_id: int, card_list: CardListModel) -> (List[Card], BaseError):
@@ -66,18 +65,18 @@ def write_card(request: CardDataRequest, user_id: int, card_list: CardListModel)
             card.expiration_date = request.expiration_date
             card.priority = request.priority if request.priority is not None else Priority.MEDIUM
             card.assignee_id = request.assignee
-            card.list = card_list
+            if card_list is not None:
+                card.list = card_list
 
             actual_children_quarry = ParentChild.select().where(ParentChild.parent == card)
             for parent_child in actual_children_quarry:
-                if bool(check_access_to_card(parent_child.child, user_id) & AccessType.READ) or \
-                        parent_child.child.id not in request.children:
+                if parent_child.child.id not in request.children:
                     parent_child.delete_instance()
 
             if request.children is not None:
                 potential_children_quarry = CardModel.select().where(CardModel.id.in_(request.children))
                 for iter_card in potential_children_quarry:
-                    if bool(check_access_to_card(iter_card, user_id) & AccessType.READ):
+                    if bool(check_access_to_card(iter_card, user_id) & AccessType.READ) and not (iter_card == card):
                         try:
                             ParentChild.get(ParentChild.parent == card, ParentChild.child == iter_card)
                         except DoesNotExist:
@@ -112,7 +111,7 @@ def write_card(request: CardDataRequest, user_id: int, card_list: CardListModel)
             if request.children is not None:
                 potential_children_quarry = CardModel.select().where(CardModel.id.in_(request.children))
                 for iter_card in potential_children_quarry:
-                    if bool(check_access_to_card(iter_card, user_id) & AccessType.READ):
+                    if bool(check_access_to_card(iter_card, user_id) & AccessType.READ) and not (iter_card == card):
                         ParentChild.create(parent=card, child=iter_card)
 
             return [_create_card_from_orm(card)], None
@@ -136,14 +135,18 @@ def read_card(request: CardDataRequest, user_id: int, card_list: CardListModel) 
         return card_response, None
     else:
         try:
-            card = CardModel.get((CardModel.id == request.id) | (CardModel.name == request.name))
+            if card_list is None:
+                card = CardModel.get((CardModel.id == request.id) | (CardModel.name == request.name))
+            else:
+                card = CardModel.get(((CardModel.id == request.id) | (CardModel.name == request.name))
+                                     & CardModel.list == card_list)
             if bool(check_access_to_card(card, user_id) & AccessType.READ):
                 return [_create_card_from_orm(card)], None
             else:
                 return None, BaseError(code=provider.StorageProviderErrors.ACCESS_DENIED,
                                        description="This user can't read this card")
         except DoesNotExist:
-            return None, BaseError(code=provider.StorageProviderErrors.LIST_DOES_NOT_EXIST,
+            return None, BaseError(code=provider.StorageProviderErrors.CARD_DOES_NOT_EXIST,
                                    description="Card doesn't exist")
 
 

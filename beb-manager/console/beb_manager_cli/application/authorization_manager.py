@@ -27,7 +27,7 @@ class AuthorizationManager:
     def get_current_user_id(self) -> Optional[int]:
         try:
             self.config_parser.read(self.config_file)
-            user_id = self.config_parser[_LOGGED_USER_SECTION]['unique_id']
+            user_id = int(self.config_parser[_LOGGED_USER_SECTION]['unique_id'])
         except KeyError:
             return None
 

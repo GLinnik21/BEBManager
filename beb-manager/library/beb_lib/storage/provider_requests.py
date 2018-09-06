@@ -16,9 +16,9 @@ CardDataRequest = namedtuple('CardDataRequest', REQUEST_ACCESS_FIELDS + ['id',
                                                                          'tags',
                                                                          'list_id'])
 
-# GetAccessRightRequest = namedtuple('GetAccessRightRequest', REQUEST_BASE_FIELDS + ['object_type',
-#                                                                                    'object_id',
-#                                                                                    'user_id'])
+GetAccessRightRequest = namedtuple('GetAccessRightRequest', REQUEST_BASE_FIELDS + ['object_type',
+                                                                                   'object_id',
+                                                                                   'user_id'])
 
 AddAccessRightRequest = namedtuple('AddAccessRightRequest', REQUEST_BASE_FIELDS + ['object_type',
                                                                                    'object_id',

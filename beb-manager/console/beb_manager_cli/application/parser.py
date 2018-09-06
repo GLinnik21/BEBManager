@@ -6,11 +6,11 @@ class ValidateDateAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         try:
             datetime.strptime(values, '%Y-%m-%d,%H:%M')
-            namespace.EXPIRATION_DATE = values
+            namespace.expiration_date = values
         except ValueError:
             try:
                 datetime.strptime(values, '%Y-%m-%d')
-                namespace.EXPIRATION_DATE = values + ",9:00"
+                namespace.expiration_date = values + ",9:00"
             except ValueError:
                 parser.error("Not valid date: '{}'.".format(values))
 
@@ -21,6 +21,21 @@ class ValidateStartAtUsageAction(argparse.Action):
             parser.error("[-sa START_REPEAT_AT] should be used only with [-r REPEAT]")
         else:
             namespace.start_repeat_at = values
+
+
+class ValidateAccessModeAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values.startswith("+") or values.startswith("~"):
+            if len(values[1:]) == 2:
+                if values[1:] == 'rw' or values[1:] == 'wr':
+                    namespace.mode = values
+                    return
+            elif len(values[1:]) == 1:
+                if values[1:] == 'r' or values[1:] == 'w':
+                    namespace.mode = values
+                    return
+
+        parser.error("Invalid \033[4mmode\033[0m format")
 
 
 class CLIParser:
@@ -56,12 +71,12 @@ class CLIParser:
                                                      title="commands that applicable to cards")
         card_subparsers.required = True
 
-        cards_creation_parser = card_subparsers.add_parser('add', description='Add card', help='Add card')
+        cards_creation_parser = card_subparsers.add_parser('add', description='Add card', help='add card')
         cards_creation_list_group = cards_creation_parser.add_mutually_exclusive_group()
         cards_creation_list_group.required = True
 
         cards_creation_parser.add_argument('name', help='name of the new card')
-        cards_creation_list_group.add_argument('-lid', '--list_id',
+        cards_creation_list_group.add_argument('-lid', '--list_id', type=int,
                                                help='unique id of list where the card would be stored')
         cards_creation_list_group.add_argument('-ln', '--list_name',
                                                help='name of list where the card would be stored')
@@ -69,7 +84,8 @@ class CLIParser:
         cards_creation_parser.add_argument('-d', '--description', help='description of the task in the card')
         cards_creation_parser.add_argument('-p', '--priority', choices=['low', 'medium', 'high'], default='medium',
                                            help='priority of the card (default is "medium")')
-        cards_creation_parser.add_argument('-t', '--tags', help='name of the tags to add')
+        cards_creation_parser.add_argument('-t', '--tags', help='names of the tags to add', nargs='*')
+        cards_creation_parser.add_argument('-c', '--children', help='ids of the children cards', type=int, nargs='*')
         cards_creation_parser.add_argument("-e", "--expiration_date",
                                            help="The Expiration Date - format YYYY-MM-DD,hh:mm",
                                            action=ValidateDateAction)
@@ -78,40 +94,44 @@ class CLIParser:
         cards_creation_plan_group.required = False
         cards_creation_plan_group.add_argument('-r',
                                                '--repeat',
-                                               help="Creates repeated card according to interval. E.g. repeat 'every "
-                                                    "1 week'")
+                                               help="Creates repeated card according to interval. E.g. repeat '1 week'")
         cards_creation_plan_group.add_argument('-sa',
                                                '--start_repeat_at',
                                                help="Start date time for repeated card. E.g. --sa 'in 3 days'",
                                                action=ValidateStartAtUsageAction)
 
-        card_editing_parser = card_subparsers.add_parser('edit', description='Change card', help='Change card')
+        card_editing_parser = card_subparsers.add_parser('edit', description='Change card', help='change card')
         cards_editing_list_group = card_editing_parser.add_mutually_exclusive_group()
         cards_editing_list_group.required = True
 
-        card_editing_parser.add_argument('card_id', help='unique identifier of the card that should be edited')
-        cards_editing_list_group.add_argument('-lid', '--list_id',
+        card_editing_parser.add_argument('card_id', type=int,
+                                         help='unique identifier of the card that should be edited')
+        cards_editing_list_group.add_argument('-lid', '--list_id', type=int,
                                               help='unique id of list where the card would be stored')
         cards_editing_list_group.add_argument('-ln', '--list_name',
                                               help='name of list where the card would be stored')
-        card_editing_parser.add_argument('-n', '--name')
+        card_editing_parser.add_argument('-n', '--name', help='new name of the new card')
 
-        card_editing_parser.add_argument('-d', '--description', help='description of the task in the card')
+        card_editing_parser.add_argument('-d', '--description', help='new description of the task in the card')
         card_editing_parser.add_argument('-p', '--priority', choices=['low', 'medium', 'high'],
-                                         help='priority of the card')
+                                         help='new priority of the card')
         card_editing_parser_tag_group = card_editing_parser.add_mutually_exclusive_group()
-        card_editing_parser_tag_group.add_argument('-at', '--add_tags', help='name of the tags to add')
-        card_editing_parser_tag_group.add_argument('-rt', '--remove_tags', help='name of the tags to remove')
+        card_editing_parser_tag_group.add_argument('-at', '--add_tags', help='name of the tags to add', nargs='*')
+        card_editing_parser_tag_group.add_argument('-rt', '--remove_tags', help='name of the tags to remove', nargs='*')
+        card_editing_parser_children_group = card_editing_parser.add_mutually_exclusive_group()
+        card_editing_parser_children_group.add_argument('-ac', '--add_children', type=int,
+                                                        help='ids of the cards to add', nargs='*')
+        card_editing_parser_children_group.add_argument('-rc', '--remove_children', type=int,
+                                                        help='ids of the cards to remove', nargs='*')
         card_editing_parser.add_argument("-e", "--expiration_date",
-                                         help="The Expiration Date - format YYYY-MM-DD,hh:mm",
+                                         help="The new Expiration Date - format YYYY-MM-DD,hh:mm",
                                          action=ValidateDateAction)
         card_editing_parser_plan = card_editing_parser.add_mutually_exclusive_group()
         cards_editing_plan_group = card_editing_parser.add_argument_group('plan',
                                                                           'Arguments to configure periodical task')
         cards_editing_plan_group.add_argument('-r',
                                               '--repeat',
-                                              help="Creates repeated card according to interval. E.g. repeat 'every "
-                                                   "1 week'")
+                                              help="Creates repeated card according to interval. E.g. repeat '1 week'")
         cards_editing_plan_group.add_argument('-sa',
                                               '--start_repeat_at',
                                               help="Start date time for repeated card. E.g. --sa 'in 3 days'",
@@ -120,20 +140,30 @@ class CLIParser:
         card_editing_parser_plan.add_argument('-dp', '--delete_plan', help='Delete periodical card plan',
                                               action='store_true')
 
-        card_display_parser = card_subparsers.add_parser('display', description='Display card', help='display card')
-        parser_display_card_group = card_display_parser.add_mutually_exclusive_group()
-        parser_display_card_group.required = True
-        parser_display_card_group.add_argument('-i', '--id', type=int, help='display card with the particular id')
-        parser_display_card_group.add_argument('-n', '--name', help='display card with the particular name')
-        parser_display_card_group.add_argument('-c', '--created', help='display created cards by this user')
-        parser_display_card_group.add_argument('-as', '--assigned', help='display assigned cards')
-        parser_display_card_group.add_argument('-ar', '--archived', help='display archived cards')
-        parser_display_card_group.add_argument('-cr', '--can_read', help='display cards that user can read')
-        parser_display_card_group.add_argument('-cw', '--can_write', help='display cards that user can write')
+        parser_delete_card = card_subparsers.add_parser('delete', description='Delete card', help='delete card')
+        parser_delete_card.add_argument('id', type=int, help='the id of the card')
+
+        parser_archive_card = card_subparsers.add_parser('archive', description='Archive card', help='archive card')
+        parser_archive_card.add_argument('id', type=int, help='the id of the card')
+
+        card_show_parser = card_subparsers.add_parser('show', description='Show card', help='show card')
+        parser_show_card_group = card_show_parser.add_mutually_exclusive_group()
+        parser_show_card_group.required = True
+        parser_show_card_group.add_argument('-i', '--id', type=int, help='show card with the particular id')
+        parser_show_card_group.add_argument('-n', '--name', help='show card with the particular name')
+        parser_show_card_group.add_argument('-c', '--created', help='show created cards by this user',
+                                            action='store_true')
+        parser_show_card_group.add_argument('-as', '--assigned', help='show assigned cards', action='store_true')
+        parser_show_card_group.add_argument('-ar', '--archived', help='show archived cards', action='store_true')
+        parser_show_card_group.add_argument('-cr', '--can_read', help='show cards that user can read',
+                                            action='store_true')
+        parser_show_card_group.add_argument('-cw', '--can_write', help='show cards that user can write',
+                                            action='store_true')
 
         card_assign_parser = card_subparsers.add_parser('assign', description='Assign card', help='assign card')
-        card_assign_parser.add_argument('-cid', '--card_id', help='identifier of the task to assign').required = True
-        card_assign_parser.add_argument('-uid', '--user_id',
+        card_assign_parser.add_argument('-cid', '--card_id', type=int,
+                                        help='identifier of the task to assign').required = True
+        card_assign_parser.add_argument('-uid', '--user_id', type=int,
                                         help='identifier of the user who this card would be assigned').required = True
 
         parser_access_card = card_subparsers.add_parser('access',
@@ -141,7 +171,8 @@ class CLIParser:
                                                         help='configure access to card')
         parser_access_card.add_argument('-cid', '--card_id', help='the id of the card').required = True
         parser_access_card.add_argument('-uid', '--user_id', help='the id of the user').required = True
-        parser_access_card.add_argument('mode', metavar="\033[4mmode\033[0m", help='access mode (+rw, ~rw)')
+        parser_access_card.add_argument('mode', metavar="\033[4mmode\033[0m", help='access mode (+rw, ~rw)',
+                                        action=ValidateAccessModeAction)
 
     def _add_tag_parser(self):
         tag_parser = self.object_subparsers.add_parser('tag',
@@ -154,14 +185,14 @@ class CLIParser:
                                                    title="commands that applicable to tags")
         tag_subparsers.required = True
 
-        parser_display_tag = tag_subparsers.add_parser('display',
-                                                       description='Display tags', help='display tags')
-        parser_display_tag_group = parser_display_tag.add_mutually_exclusive_group()
-        parser_display_tag_group.required = True
+        parser_show_tag = tag_subparsers.add_parser('show',
+                                                    description='Show tags', help='show tags')
+        parser_show_tag_group = parser_show_tag.add_mutually_exclusive_group()
+        parser_show_tag_group.required = True
 
-        parser_display_tag_group.add_argument('-a', '--all', help='display all tags', action='store_true')
-        parser_display_tag_group.add_argument('-i', '--id', type=int, help='display tag with the particular id')
-        parser_display_tag_group.add_argument('-n', '--name', help='display tag with the particular name')
+        parser_show_tag_group.add_argument('-a', '--all', help='show all tags', action='store_true')
+        parser_show_tag_group.add_argument('-i', '--id', type=int, help='show tag with the particular id')
+        parser_show_tag_group.add_argument('-n', '--name', help='show tag with the particular name')
 
         parser_add_tag = tag_subparsers.add_parser('add', description='Add tag', help='add tag')
         parser_add_tag.add_argument('name', help='name of the tag')
@@ -185,7 +216,7 @@ class CLIParser:
                                                      title="commands that applicable to users")
         user_subparsers.required = True
 
-        user_subparsers.add_parser('current', description='Display current user', help='display current user')
+        user_subparsers.add_parser('current', description='Show current user', help='show current user')
 
         parser_add_user = user_subparsers.add_parser('add', description='Add user', help='add user')
         parser_add_user.add_argument('username', help='name of the user')
@@ -204,7 +235,7 @@ class CLIParser:
                                    description='Logout from current user',
                                    help='logout from current user')
 
-        user_subparsers.add_parser('all', description='Display all users', help='display all users')
+        user_subparsers.add_parser('all', description='Show all users', help='show all users')
 
     def _add_list_parser(self):
         list_parser = self.object_subparsers.add_parser('list',
@@ -215,15 +246,15 @@ class CLIParser:
                                                      title="commands that applicable to lists")
         list_subparsers.required = True
 
-        parser_display_list = list_subparsers.add_parser('display',
-                                                         description='Display lists', help='display lists')
-        parser_display_list_group = parser_display_list.add_mutually_exclusive_group()
-        parser_display_list_group.required = True
+        parser_show_list = list_subparsers.add_parser('show',
+                                                      description='Show lists', help='show lists')
+        parser_show_list_group = parser_show_list.add_mutually_exclusive_group()
+        parser_show_list_group.required = True
 
-        parser_display_list_group.add_argument('-a', '--all', help='display all lists in current board',
-                                               action='store_true')
-        parser_display_list_group.add_argument('-i', '--id', type=int, help='display lists with the particular id')
-        parser_display_list_group.add_argument('-n', '--name', help='display lists with the particular name')
+        parser_show_list_group.add_argument('-a', '--all', help='show all lists in current board',
+                                            action='store_true')
+        parser_show_list_group.add_argument('-i', '--id', type=int, help='show lists with the particular id')
+        parser_show_list_group.add_argument('-n', '--name', help='show lists with the particular name')
 
         parser_add_list = list_subparsers.add_parser('add', description='Add list', help='add list')
         parser_add_list.add_argument('name', help='name of the list')
@@ -240,7 +271,8 @@ class CLIParser:
                                                         help='configure access to list')
         parser_access_list.add_argument('-lid', '--list_id', help='the id of the list').required = True
         parser_access_list.add_argument('-uid', '--user_id', help='the id of the user').required = True
-        parser_access_list.add_argument('mode', metavar="\033[4mmode\033[0m", help='access mode (+rw, ~rw)')
+        parser_access_list.add_argument('mode', metavar="\033[4mmode\033[0m", help='access mode (+rw, ~rw)',
+                                        action=ValidateAccessModeAction)
 
     def _add_board_parser(self):
         board_parser = self.object_subparsers.add_parser('board',
@@ -251,15 +283,15 @@ class CLIParser:
                                                        title="commands that applicable to boards")
         board_subparsers.required = True
 
-        parser_display_board = board_subparsers.add_parser('display',
-                                                           description='Display boards', help='display boards')
-        parser_display_board_group = parser_display_board.add_mutually_exclusive_group()
-        parser_display_board_group.required = True
+        parser_show_board = board_subparsers.add_parser('show',
+                                                        description='Show boards', help='show boards')
+        parser_show_board_group = parser_show_board.add_mutually_exclusive_group()
+        parser_show_board_group.required = True
 
-        parser_display_board_group.add_argument('-c', '--current', help='display current board', action='store_true')
-        parser_display_board_group.add_argument('-a', '--all', help='display all boards', action='store_true')
-        parser_display_board_group.add_argument('-i', '--id', type=int, help='display board with the particular id')
-        parser_display_board_group.add_argument('-n', '--name', help='display board with the particular name')
+        parser_show_board_group.add_argument('-c', '--current', help='show current board', action='store_true')
+        parser_show_board_group.add_argument('-a', '--all', help='show all boards', action='store_true')
+        parser_show_board_group.add_argument('-i', '--id', type=int, help='show board with the particular id')
+        parser_show_board_group.add_argument('-n', '--name', help='show board with the particular name')
 
         parser_add_board = board_subparsers.add_parser('add', description='Add board', help='add board')
         parser_add_board.add_argument('name', help='name of the board')
@@ -280,4 +312,5 @@ class CLIParser:
                                                           help='configure access to board')
         parser_access_board.add_argument('-bid', '--board_id', help='the id of the board').required = True
         parser_access_board.add_argument('-uid', '--user_id', help='the id of the user').required = True
-        parser_access_board.add_argument('mode', metavar="\033[4mmode\033[0m", help='access mode (+rw, ~rw)')
+        parser_access_board.add_argument('mode', metavar="\033[4mmode\033[0m", help='access mode (+rw, ~rw)',
+                                         action=ValidateAccessModeAction)

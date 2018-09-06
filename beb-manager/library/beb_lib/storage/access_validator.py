@@ -104,7 +104,7 @@ def remove_right(object_type: object, object_id: int, user_id: int, access_type:
         :param object_id: The id of the ORM object that access_type should be removed
         :param user_id: The id of the user whose access level is needed to be configured
         :param access_type: Types from AccessType enum (eg. READ, WRITE, READ_WRITE) that would be removed from
-        access_typeof the object for provided user
+        access_type of the object for provided user
         """
     orm_model = _get_orm_model(object_type, object_id, user_id)
 
@@ -113,3 +113,24 @@ def remove_right(object_type: object, object_id: int, user_id: int, access_type:
         a_type |= access_type
         orm_model.access_type = (a_type ^ access_type).value
         orm_model.save()
+
+
+def get_right(object_type: object, object_id: int, user_id: int) -> Optional[AccessType]:
+    """
+
+    :param object_type: Pass here class from domain_entities
+    :param object_id: The id of the ORM object
+    :param user_id: The id of the user whose access level is needed to be known
+    :return: Types from AccessType enum (eg. READ, WRITE, READ_WRITE)
+    """
+    class_name = object_type.__name__
+
+    try:
+        if class_name == Board.__name__:
+            return check_access_to_board(BoardModel.get(BoardModel.id == object_id), user_id)
+        elif class_name == CardsList.__name__:
+            return check_access_to_list(CardListModel.get(CardListModel.id == object_id), user_id)
+        elif class_name == Card.__name__:
+            return check_access_to_card(CardModel.get(CardModel.id == object_id), user_id)
+    except DoesNotExist:
+        return None

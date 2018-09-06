@@ -7,7 +7,7 @@ setup(
     author="Gleb Linnik",
     author_email="gleb_linnik@icloud.com",
     url='https://bitbucket.org/GLinnik/isp',
-    install_requires=['peewee', 'beb_lib'],
+    install_requires=['peewee', 'beb_lib', 'dateparser'],
     packages=find_packages(),
     entry_points='''
     [console_scripts]

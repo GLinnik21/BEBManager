@@ -17,7 +17,8 @@ from beb_lib.storage.provider_requests import (BoardDataRequest,
                                                AddAccessRightRequest,
                                                RemoveAccessRightRequest,
                                                PlanDataRequest,
-                                               TagDataRequest
+                                               TagDataRequest,
+                                               GetAccessRightRequest
                                                )
 from beb_lib.model.exceptions import (BoardDoesNotExistError,
                                       ListDoesNotExistError,
@@ -25,7 +26,8 @@ from beb_lib.model.exceptions import (BoardDoesNotExistError,
                                       AccessDeniedError,
                                       Error,
                                       TagDoesNotExistError,
-                                      PlanDoesNotExistError
+                                      PlanDoesNotExistError,
+                                      UniqueObjectDoesNotExistError
                                       )
 
 
@@ -41,7 +43,20 @@ class Model:
             self.storage_provider = StorageProvider(path_to_db)
         self.storage_provider.open()
 
-    def add_right(self, object_id: int, object_type: type, user_id: int, access_type: AccessType):
+    def get_right(self, object_id: int, object_type: type, user_id: int) -> AccessType:
+        request = GetAccessRightRequest(request_id=random.randrange(1000000),
+                                        request_type=RequestType.READ,
+                                        object_id=object_id,
+                                        object_type=object_type,
+                                        user_id=user_id)
+        access_type = self.storage_provider.execute(request)
+
+        if access_type is None:
+            raise UniqueObjectDoesNotExistError
+
+        return access_type
+
+    def add_right(self, object_id: int, object_type: type, user_id: int, access_type: AccessType) -> None:
         request = AddAccessRightRequest(request_id=random.randrange(1000000),
                                         request_type=RequestType.WRITE,
                                         object_id=object_id,
@@ -51,7 +66,7 @@ class Model:
 
         self.storage_provider.execute(request)
 
-    def remove_right(self, object_id: int, object_type: type, user_id: int, access_type: AccessType):
+    def remove_right(self, object_id: int, object_type: type, user_id: int, access_type: AccessType) -> None:
         request = RemoveAccessRightRequest(request_id=random.randrange(1000000),
                                            request_type=RequestType.WRITE,
                                            object_id=object_id,
@@ -161,6 +176,10 @@ class Model:
 
     def list_delete(self, list_id: int = None, list_name: str = None,
                     request_user_id: int = None) -> None:
+
+        if self.storage_provider.archived_list_id == list_id:
+            raise AccessDeniedError("You can't delete this list")
+
         request = ListDataRequest(request_id=random.randrange(1000000),
                                   request_user_id=request_user_id,
                                   id=list_id,
@@ -213,7 +232,7 @@ class Model:
 
         return response.cards
 
-    def card_write(self, list_id: int, card_instance: Card, request_user_id: int = None) -> Card:
+    def card_write(self, list_id: Optional[int], card_instance: Card, request_user_id: int = None) -> Card:
         request = CardDataRequest(request_id=random.randrange(1000000),
                                   id=None,
                                   request_user_id=request_user_id,
@@ -380,13 +399,32 @@ class Model:
                                     Code: {} Description: {}""".format(error.code, error.description))
 
     # region convenience methods
-
     def archive_card(self, card_id: int = None, card_name: str = None,
                      request_user_id: int = None) -> None:
         cards = self.card_read(card_id, card_name, request_user_id)
         self.card_write(self.storage_provider.archived_list_id, cards[0], request_user_id)
 
-    # def get_archived_cards(self, request_user_id: int = None) -> List[Card]:
-    #     return self.get_cards_in_list(self.storage_provider.archived_list_id, request_user_id)
+    def get_cards_owned_by_user(self, user_id: int) -> List[Card]:
+        cards = self.card_read(None, request_user_id=user_id)
+        return list(filter(lambda card: card.user_id == user_id, cards))
 
+    def get_cards_assigned_user(self, user_id: int) -> List[Card]:
+        cards = self.card_read(None, request_user_id=user_id)
+        return list(filter(lambda card: card.assignee_id == user_id, cards))
+
+    def get_archived_cards(self, user_id: int = None) -> List[Card]:
+        return self.card_read(self.storage_provider.archived_list_id, request_user_id=user_id)
+
+    def get_readable_cards(self, user_id: int) -> List[Card]:
+        cards = self.card_read(None, request_user_id=user_id)
+        return list(filter(lambda card: bool(self.get_right(card.unique_id, Card, user_id) & AccessType.READ), cards))
+
+    def get_writable_cards(self, user_id: int) -> List[Card]:
+        cards = self.card_read(None, request_user_id=user_id)
+        return list(filter(lambda card: bool(self.get_right(card.unique_id, Card, user_id) & AccessType.WRITE), cards))
     # end region
+
+
+# if __name__ == '__main__':
+#     model = Model("/Users/gleblinnik/Developer/isp/beb-manager/library/db.db")
+#     print(model.plan_write(1, 1, datetime.timedelta(days=5), datetime.datetime.fromtimestamp(100000)))

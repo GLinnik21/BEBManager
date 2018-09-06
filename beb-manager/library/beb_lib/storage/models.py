@@ -41,7 +41,7 @@ class TagModel(BaseNameModel):
 
 
 class CardModel(BaseNameModel):
-    description = CharField(default="")
+    description = CharField(null=True)
     expiration_date = DateTimeField(null=True)
     priority = IntegerField(default=Priority.MEDIUM.value)
     user_id = IntegerField()

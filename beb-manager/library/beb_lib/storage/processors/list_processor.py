@@ -18,7 +18,7 @@ from beb_lib.storage.provider_requests import (BoardDataRequest)
 
 METHOD_MAP = {
     RequestType.WRITE: lambda request, user_id, board_model: write_list(request, board_model, user_id),
-    RequestType.READ: lambda request, user_id, board_model: read_list(request, user_id, board_model),
+    RequestType.READ: lambda request, user_id, board_model: read_list(request, board_model, user_id),
     RequestType.DELETE: lambda request, user_id, board_model: delete_list(request, user_id)
 }
 
@@ -40,9 +40,11 @@ def write_list(request: BoardDataRequest, board: BoardModel, user_id: int) -> (L
 
         if bool(check_access_to_list(card_list, user_id) & AccessType.WRITE):
             card_list.name = request.name
-            card_list.board = board
             card_list.save()
             cards = [card_id for card_id in card_list.cards]
+            if board is not None:
+                card_list.board = board
+
             return [CardsList(card_list.name, card_list.id, cards)], None
         else:
             return None, BaseError(provider.StorageProviderErrors.ACCESS_DENIED, "This user can't write to this list")
@@ -72,8 +74,11 @@ def read_list(request: BoardDataRequest, board: BoardModel, user_id: int) -> (Li
         return list_response, None
     else:
         try:
-            card_list = CardListModel.get((CardListModel.id == request.id) |
-                                          (CardListModel.name == request.name))
+            if board is None:
+                card_list = CardListModel.get((CardListModel.id == request.id) | (CardListModel.name == request.name))
+            else:
+                card_list = CardListModel.get(((CardListModel.id == request.id) | (CardListModel.name == request.name))
+                                              & CardListModel.board == board)
             if bool(check_access_to_list(card_list, user_id) & AccessType.READ):
                 cards = [card_id for card_id in card_list.cards]
                 return [CardsList(card_list.name, card_list.id, cards)], None
@@ -99,6 +104,7 @@ def delete_list(request: BoardDataRequest, user_id: int) -> (List[CardsList], Ba
     except DoesNotExist:
         return None, BaseError(code=provider.StorageProviderErrors.LIST_DOES_NOT_EXIST,
                                description="List doesn't exist")
+    return None, None
 
 
 def process_list_call(request: BoardDataRequest) -> (provider.ListDataResponse, BaseError):

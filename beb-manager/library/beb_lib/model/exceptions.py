@@ -9,31 +9,37 @@ class AccessDeniedError(Error):
         super().__init__(reason)
 
 
-class BoardDoesNotExistError(Error):
+class UniqueObjectDoesNotExistError(Error):
 
     def __init__(self, reason):
         super().__init__(reason)
 
 
-class ListDoesNotExistError(Error):
+class BoardDoesNotExistError(UniqueObjectDoesNotExistError):
 
     def __init__(self, reason):
         super().__init__(reason)
 
 
-class CardDoesNotExistError(Error):
+class ListDoesNotExistError(UniqueObjectDoesNotExistError):
 
     def __init__(self, reason):
         super().__init__(reason)
 
 
-class TagDoesNotExistError(Error):
+class CardDoesNotExistError(UniqueObjectDoesNotExistError):
 
     def __init__(self, reason):
         super().__init__(reason)
 
 
-class PlanDoesNotExistError(Error):
+class TagDoesNotExistError(UniqueObjectDoesNotExistError):
+
+    def __init__(self, reason):
+        super().__init__(reason)
+
+
+class PlanDoesNotExistError(UniqueObjectDoesNotExistError):
 
     def __init__(self, reason):
         super().__init__(reason)
