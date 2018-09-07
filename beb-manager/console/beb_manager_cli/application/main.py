@@ -123,7 +123,17 @@ def main():
             elif mode[0] == "~":
                 app.remove_card_rights(mode[1:], args.user_id, args.list_id)
     elif args.object == 'tag':
-        pass
+        if args.command == 'show':
+            if args.all is not None:
+                app.show_all_tags()
+            else:
+                app.print_cards_by_tag(args.id, args.name)
+        elif args.command == 'add':
+            app.add_tag(args.name)
+        elif args.command == 'edit':
+            app.edit_tag(args.id, args.name)
+        elif args.command == 'delete':
+            app.delete_tag(args.id)
 
 
 if __name__ == '__main__':

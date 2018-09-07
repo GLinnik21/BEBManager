@@ -3,15 +3,14 @@ import sys
 from datetime import datetime
 from typing import List, Optional
 
-import dateparser
-
 import beb_lib.model.exceptions as beb_lib_exceptions
+import dateparser
 from beb_lib.domain_entities.board import Board
 from beb_lib.domain_entities.card import Card
 from beb_lib.domain_entities.card_list import CardsList
 from beb_lib.domain_entities.supporting import AccessType, Priority
 from beb_lib.model.model import Model
-from beb_lib.provider_interfaces import RequestType, BaseError
+from beb_lib.provider_interfaces import RequestType
 
 import beb_manager_cli.application.config as config
 from beb_manager_cli.application.authorization_manager import AuthorizationManager
@@ -66,7 +65,7 @@ class App:
                                   id=None,
                                   name=None,
                                   request_type=RequestType.READ)
-        result = self.user_provider.execute(request)[0]
+        result, error = self.user_provider.execute(request)
         users = sorted(result.users, key=lambda user: user.unique_id)
         return users
 
@@ -75,34 +74,27 @@ class App:
                                   id=user_id,
                                   name=name,
                                   request_type=RequestType.READ)
-        result = self.user_provider.execute(request)
-
-        error: Optional[BaseError] = result[1]
+        result, error = self.user_provider.execute(request)
 
         if error is not None:
             if error.code == UserProviderErrorCodes.USER_DOES_NOT_EXIST:
                 return None
-            print("Database error: {}".format(result[1].description), file=sys.stderr)
+            print("Database error: {}".format(error.description), file=sys.stderr)
             quit(error.code)
 
-        users: Optional[List[UserInstance]] = result[0].users
-        if not users:
+        if not result.users:
             return None
         else:
-            return users[0]
+            return result.users[0]
 
     def add_user(self, name: str) -> None:
         request = UserDataRequest(request_id=random.randrange(1000000),
                                   id=None,
                                   name=name,
                                   request_type=RequestType.READ)
-        result = self.user_provider.execute(request)
+        result, error = self.user_provider.execute(request)
 
-        if result[1] is not None:
-            print(result[1].description)
-            quit(1)
-
-        if result[0].users:
+        if result.users:
             print("This username have been already taken!", file=sys.stderr)
             quit(1)
 
@@ -148,7 +140,11 @@ class App:
 
     def print_all_users(self) -> None:
         users = self.get_all_users()
-        self._print_users(users)
+        if users:
+            self._print_users(users)
+        else:
+            print('There are no users')
+            quit()
 
     @check_authorization
     def print_current_user(self) -> None:
@@ -634,4 +630,50 @@ class App:
             print(error, file=sys.stderr)
             quit(1)
 
+    def add_tag(self, name: str):
+        try:
+            self.lib_model.tag_read(tag_name=name)
+            print("Tag already exists!", file=sys.stderr)
+            quit(1)
+        except beb_lib_exceptions.TagDoesNotExistError:
+            pass
+        except beb_lib_exceptions.Error as error:
+            print(error, file=sys.stderr)
+            quit(1)
 
+        self.lib_model.tag_write(tag_name=name)
+
+    def edit_tag(self, tag_id: int, name: str):
+        try:
+            self.lib_model.tag_read(tag_id=tag_id)
+            self.lib_model.tag_write(tag_id=tag_id, tag_name=name)
+        except beb_lib_exceptions.TagDoesNotExistError:
+            print("This tag doesn't exist", file=sys.stderr)
+            quit(1)
+        except beb_lib_exceptions.Error as error:
+            print(error, file=sys.stderr)
+            quit(1)
+
+    def delete_tag(self, tag_id: int):
+        try:
+            self.lib_model.tag_delete(tag_id)
+        except beb_lib_exceptions.Error as error:
+            print(error, file=sys.stderr)
+            quit(1)
+
+    def show_all_tags(self):
+        tags = self.lib_model.tag_read()
+        for tag in tags:
+            print("TagID: {}    Name: {}".format(tag.unique_id, tag.name))
+
+    @check_authorization
+    def print_cards_by_tag(self, tag_id: int, tag_name: str):
+        try:
+            tag = self.lib_model.tag_read(tag_id, tag_name)[0]
+            cards = self.lib_model.card_read(None, tag_id=tag.unique_id,
+                                             request_user_id=self.authorization_manager.get_current_user_id())
+            for card in cards:
+                self._print_card(card)
+        except beb_lib_exceptions.Error as error:
+            print(error, file=sys.stderr)
+            quit(1)

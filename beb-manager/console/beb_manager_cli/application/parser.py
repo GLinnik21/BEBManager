@@ -191,15 +191,15 @@ class CLIParser:
         parser_show_tag_group.required = True
 
         parser_show_tag_group.add_argument('-a', '--all', help='show all tags', action='store_true')
-        parser_show_tag_group.add_argument('-i', '--id', type=int, help='show tag with the particular id')
-        parser_show_tag_group.add_argument('-n', '--name', help='show tag with the particular name')
+        parser_show_tag_group.add_argument('-i', '--id', type=int, help='show cards with this TagID')
+        parser_show_tag_group.add_argument('-n', '--name', help='show cards with this tag name')
 
         parser_add_tag = tag_subparsers.add_parser('add', description='Add tag', help='add tag')
         parser_add_tag.add_argument('name', help='name of the tag')
 
-        parser_edit_tag = tag_subparsers.add_parser('edit', description='Edit list', help='edit list')
-        parser_edit_tag.add_argument('id', help='the id of the list to edit')
-        parser_edit_tag.add_argument('-n', '--name', help='the new name of the list')
+        parser_edit_tag = tag_subparsers.add_parser('edit', description='Edit tag', help='edit tag')
+        parser_edit_tag.add_argument('id', help='the id of the tag to edit')
+        parser_edit_tag.add_argument('-n', '--name', help='the new name of the tag')
 
         parser_delete_tag = tag_subparsers.add_parser('delete', description='Delete tag', help='delete tag')
         parser_delete_tag.add_argument('id', type=int, help='the id of the tag')

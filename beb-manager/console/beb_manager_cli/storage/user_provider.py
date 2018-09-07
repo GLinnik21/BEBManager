@@ -1,4 +1,5 @@
 from collections import namedtuple
+from typing import List
 
 from peewee import SqliteDatabase
 from enum import IntEnum, unique, auto
@@ -44,25 +45,23 @@ class UserProvider(IProvider, IStorageProviderProtocol):
         self.is_connected = False
 
     def execute(self, request: namedtuple) -> (namedtuple, BaseError):
-        return self._database_call(request)
+        user_response, error = self._database_call(request)
+        return UserDataResponse(users=user_response, request_id=request.request_id), error
 
     @staticmethod
-    def _database_call(request: namedtuple) -> (namedtuple, BaseError):
-        user_response = None
-
+    def _database_call(request: namedtuple) -> (List[User], BaseError):
         if request.request_type == RequestType.WRITE:
             user = User.create(id=request.id, username=request.name)
-            user_response = [create_user_from_orm(user)]
+            return [create_user_from_orm(user)], None
         elif request.request_type == RequestType.READ:
-            if request.id is None and request.name is None:
-                query = User.select()
-            else:
-                query = User.select().where((User.id == request.id) | (User.username == request.name))
-                if query.count() == 0:
-                    return None, BaseError(code=UserProviderErrorCodes.USER_DOES_NOT_EXIST, description="User doesn't "
-                                                                                                        "exist")
-            user_response = [create_user_from_orm(orm_user) for orm_user in query]
+            query = User.select()
+
+            if request.id is not None or request.name is not None:
+                query = query.where((User.id == request.id) | (User.username == request.name))
+
+            if query.count() == 0:
+                return None, BaseError(code=UserProviderErrorCodes.USER_DOES_NOT_EXIST, description="User doesn't "
+                                                                                                    "exist")
+            return [create_user_from_orm(orm_user) for orm_user in query], None
         elif request.request_type == RequestType.DELETE:
             User.delete().where(User.id == request.id).execute()
-
-        return UserDataResponse(users=user_response, request_id=request.request_id), None

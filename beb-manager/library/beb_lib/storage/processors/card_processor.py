@@ -123,11 +123,13 @@ def write_card(request: CardDataRequest, user_id: int, card_list: CardListModel)
 def read_card(request: CardDataRequest, user_id: int, card_list: CardListModel) -> (List[Card], BaseError):
     if request.id is None and request.name is None:
         card_response = []
+        query = CardModel.select()
 
-        if card_list is None:
-            query = CardModel.select()
-        else:
-            query = CardModel.select().where(CardModel.list == card_list)
+        if card_list is not None:
+            query = query.where(CardModel.list == card_list)
+
+        if request.tags is not None:
+            query = query.join(TagCard).join(TagModel).where(TagModel.id == request.tags[0])
 
         for card in query:
             if bool(check_access_to_card(card, user_id) & AccessType.READ):

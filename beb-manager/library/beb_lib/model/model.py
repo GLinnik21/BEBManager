@@ -198,7 +198,7 @@ class Model:
                 raise Error("""Undefined DB exception! 
                 Code: {} Description: {}""".format(error.code, error.description))
 
-    def card_read(self, list_id: Optional[int], card_id: int = None, card_name: str = None,
+    def card_read(self, list_id: Optional[int], card_id: int = None, card_name: str = None, tag_id: int = None,
                   request_user_id: int = None) -> List[Card]:
         request = CardDataRequest(request_id=random.randrange(1000000),
                                   id=card_id,
@@ -209,7 +209,7 @@ class Model:
                                   priority=None,
                                   assignee=None,
                                   children=None,
-                                  tags=None,
+                                  tags=[tag_id],
                                   list_id=list_id,
                                   request_type=RequestType.READ)
 
