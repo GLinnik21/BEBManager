@@ -31,6 +31,8 @@ PlanDataRequest = namedtuple('PlanDataRequest', REQUEST_ACCESS_FIELDS + ['interv
                                                                          'last_created',
                                                                          'card_id'])
 
+PlanTriggerRequest = namedtuple('PlanTriggerRequest', REQUEST_BASE_FIELDS)
+
 
 class RemoveAccessRightRequest(AddAccessRightRequest):
     pass

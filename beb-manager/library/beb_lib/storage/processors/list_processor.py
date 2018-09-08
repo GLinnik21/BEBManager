@@ -32,11 +32,7 @@ def _delete_list(card_list: CardListModel):
 
 def write_list(request: BoardDataRequest, board: BoardModel, user_id: int) -> (List[CardsList], BaseError):
     try:
-        card_list = None
-        if request.id is not None:
-            card_list = CardListModel.get(CardListModel.id == request.id)
-        elif request.name is not None:
-            card_list = CardListModel.get(CardListModel.name == request.name)
+        card_list = CardListModel.get(CardListModel.id == request.id)
 
         if bool(check_access_to_list(card_list, user_id) & AccessType.WRITE):
             card_list.name = request.name
@@ -59,41 +55,35 @@ def write_list(request: BoardDataRequest, board: BoardModel, user_id: int) -> (L
 
 
 def read_list(request: BoardDataRequest, board: BoardModel, user_id: int) -> (List[CardsList], BaseError):
-    if request.id is None and request.name is None:
-        list_response = []
+    query = CardListModel.select()
+    list_response = []
 
-        if board is None:
-            query = CardListModel.select()
-        else:
-            query = CardListModel.select().where(CardListModel.board == board)
+    if request.id is not None:
+        query = query.where(CardListModel.id == request.id)
+    if request.name is not None:
+        query = query.where(CardListModel.name == request.name)
+    if board is not None:
+        query = query.where(CardListModel.board == board)
 
-        for card_list in query:
-            if bool(check_access_to_list(card_list, user_id) & AccessType.READ):
-                cards = [card_id for card_id in card_list.cards]
-                list_response += [CardsList(card_list.name, card_list.id, cards)]
-        return list_response, None
+    if query.count() == 0:
+        return None, BaseError(code=provider.StorageProviderErrors.LIST_DOES_NOT_EXIST,
+                               description="List doesn't exist")
+
+    for card_list in query:
+        if bool(check_access_to_list(card_list, user_id) & AccessType.READ):
+            cards = [card_id for card_id in card_list.cards]
+            list_response += [CardsList(card_list.name, card_list.id, cards)]
+
+    if not list_response:
+        return None, BaseError(code=provider.StorageProviderErrors.ACCESS_DENIED,
+                               description="This user can't read this list")
     else:
-        try:
-            if board is None:
-                card_list = CardListModel.get((CardListModel.id == request.id) | (CardListModel.name == request.name))
-            else:
-                card_list = CardListModel.get(((CardListModel.id == request.id) | (CardListModel.name == request.name))
-                                              & CardListModel.board == board)
-            if bool(check_access_to_list(card_list, user_id) & AccessType.READ):
-                cards = [card_id for card_id in card_list.cards]
-                return [CardsList(card_list.name, card_list.id, cards)], None
-            else:
-                return None, BaseError(code=provider.StorageProviderErrors.ACCESS_DENIED,
-                                       description="This user can't read this list")
-        except DoesNotExist:
-            return None, BaseError(code=provider.StorageProviderErrors.LIST_DOES_NOT_EXIST,
-                                   description="List doesn't exist")
+        return list_response, None
 
 
 def delete_list(request: BoardDataRequest, user_id: int) -> (List[CardsList], BaseError):
     try:
-        card_list = CardListModel.get((CardListModel.id == request.id) |
-                                      (CardListModel.name == request.name))
+        card_list = CardListModel.get(CardListModel.id == request.id)
         access = check_access_to_list(card_list, user_id)
         if bool(access & AccessType.WRITE):
             CardListUserAccess.delete().where(CardListUserAccess.card_list == card_list).execute()

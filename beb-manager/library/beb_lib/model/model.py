@@ -18,7 +18,8 @@ from beb_lib.storage.provider_requests import (BoardDataRequest,
                                                RemoveAccessRightRequest,
                                                PlanDataRequest,
                                                TagDataRequest,
-                                               GetAccessRightRequest
+                                               GetAccessRightRequest,
+                                               PlanTriggerRequest
                                                )
 from beb_lib.model.exceptions import (BoardDoesNotExistError,
                                       ListDoesNotExistError,
@@ -209,7 +210,7 @@ class Model:
                                   priority=None,
                                   assignee=None,
                                   children=None,
-                                  tags=[tag_id],
+                                  tags=[tag_id] if tag_id is not None else [],
                                   list_id=list_id,
                                   request_type=RequestType.READ)
 
@@ -234,7 +235,7 @@ class Model:
 
     def card_write(self, list_id: Optional[int], card_instance: Card, request_user_id: int = None) -> Card:
         request = CardDataRequest(request_id=random.randrange(1000000),
-                                  id=None,
+                                  id=card_instance.unique_id,
                                   request_user_id=request_user_id,
                                   name=card_instance.name,
                                   description=card_instance.description,
@@ -398,6 +399,10 @@ class Model:
                 raise Error("""Undefined DB exception! 
                                     Code: {} Description: {}""".format(error.code, error.description))
 
+    def trigger_card_plan_creation(self):
+        request = PlanTriggerRequest(request_id=random.randrange(1000000), request_type=RequestType.WRITE)
+        self.storage_provider.execute(request)
+
     # region convenience methods
     def archive_card(self, card_id: int = None, card_name: str = None,
                      request_user_id: int = None) -> None:
@@ -423,7 +428,6 @@ class Model:
         cards = self.card_read(None, request_user_id=user_id)
         return list(filter(lambda card: bool(self.get_right(card.unique_id, Card, user_id) & AccessType.WRITE), cards))
     # end region
-
 
 # if __name__ == '__main__':
 #     model = Model("/Users/gleblinnik/Developer/isp/beb-manager/library/db.db")

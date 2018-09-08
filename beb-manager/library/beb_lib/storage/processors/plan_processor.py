@@ -9,13 +9,30 @@ import beb_lib.storage.provider as provider
 from beb_lib.domain_entities.plan import Plan
 from beb_lib.provider_interfaces import BaseError, RequestType
 from beb_lib.storage.models import CardModel, PlanModel
-from beb_lib.storage.provider_requests import PlanDataRequest
+from beb_lib.storage.provider_requests import PlanDataRequest, PlanTriggerRequest
 
 METHOD_MAP = {
     RequestType.WRITE: lambda request, user_id, card: write_plan(request, user_id, card),
     RequestType.READ: lambda request, user_id, card: read_plan(user_id, card),
     RequestType.DELETE: lambda request, user_id, card: delete_plan(user_id, card)
 }
+
+
+def create_cards_by_plans():
+    for plan in PlanModel.select():
+        if (plan.last_created_at + datetime.timedelta(seconds=plan.interval)) < datetime.datetime.now():
+            try:
+                last_created_at = plan.last_created_at + datetime.timedelta(seconds=plan.interval)
+                while last_created_at + datetime.timedelta(seconds=plan.interval) < datetime.datetime.now():
+                    card = plan.card
+                    card.id = None
+                    card.created = last_created_at
+                    card.save()
+                    last_created_at += datetime.timedelta(seconds=plan.interval)
+                plan.last_created_at = last_created_at
+                plan.save()
+            except DoesNotExist:
+                pass
 
 
 def write_plan(request: PlanDataRequest, user_id: int, card: CardModel) -> (Plan, BaseError):
@@ -59,6 +76,9 @@ def delete_plan(user_id: int, card: CardModel) -> (None, BaseError):
 
 
 def process_plan_call(request: PlanDataRequest) -> (namedtuple, BaseError):
+    if type(request) == PlanTriggerRequest:
+        return create_cards_by_plans()
+
     try:
         card = CardModel.get(CardModel.id == request.card_id)
         user_id = request.request_user_id

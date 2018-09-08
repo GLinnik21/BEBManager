@@ -53,11 +53,7 @@ def _create_card_from_orm(card_model: CardModel) -> Card:
 
 def write_card(request: CardDataRequest, user_id: int, card_list: CardListModel) -> (List[Card], BaseError):
     try:
-        card = None
-        if request.id is not None:
-            card = CardModel.get(CardModel.id == request.id)
-        elif request.name is not None:
-            card = CardModel.get(CardModel.name == request.name)
+        card = CardModel.get(CardModel.id == request.id)
 
         if bool(check_access_to_card(card, user_id) & AccessType.WRITE):
             card.name = request.name
@@ -121,40 +117,38 @@ def write_card(request: CardDataRequest, user_id: int, card_list: CardListModel)
 
 
 def read_card(request: CardDataRequest, user_id: int, card_list: CardListModel) -> (List[Card], BaseError):
-    if request.id is None and request.name is None:
-        card_response = []
-        query = CardModel.select()
+    card_response = []
+    query = CardModel.select()
 
-        if card_list is not None:
-            query = query.where(CardModel.list == card_list)
+    if request.id is not None:
+        query = query.where(CardModel.id == request.id)
+    if request.name is not None:
+        query = query.where(CardModel.name == request.name)
+    if card_list is not None:
+        query = query.where(CardModel.list == card_list)
+    if request.tags:
+        query = query.join(TagCard).join(TagModel).where(TagModel.id == request.tags[0])
 
-        if request.tags is not None:
-            query = query.join(TagCard).join(TagModel).where(TagModel.id == request.tags[0])
+    query = query.order_by(CardModel.priority)
 
-        for card in query:
-            if bool(check_access_to_card(card, user_id) & AccessType.READ):
-                card_response += [_create_card_from_orm(card)]
-        return card_response, None
+    if query.count() == 0:
+        return None, BaseError(code=provider.StorageProviderErrors.CARD_DOES_NOT_EXIST,
+                               description="Card doesn't exist")
+
+    for card in query:
+        if bool(check_access_to_card(card, user_id) & AccessType.READ):
+            card_response += [_create_card_from_orm(card)]
+
+    if not card_response:
+        return None, BaseError(code=provider.StorageProviderErrors.ACCESS_DENIED,
+                               description="This user can't read this card")
     else:
-        try:
-            if card_list is None:
-                card = CardModel.get((CardModel.id == request.id) | (CardModel.name == request.name))
-            else:
-                card = CardModel.get(((CardModel.id == request.id) | (CardModel.name == request.name))
-                                     & CardModel.list == card_list)
-            if bool(check_access_to_card(card, user_id) & AccessType.READ):
-                return [_create_card_from_orm(card)], None
-            else:
-                return None, BaseError(code=provider.StorageProviderErrors.ACCESS_DENIED,
-                                       description="This user can't read this card")
-        except DoesNotExist:
-            return None, BaseError(code=provider.StorageProviderErrors.CARD_DOES_NOT_EXIST,
-                                   description="Card doesn't exist")
+        return card_response, None
 
 
 def delete_card(request: CardDataRequest, user_id: int) -> (List[Card], BaseError):
     try:
-        card = CardModel.get((CardModel.id == request.id) | (CardModel.name == request.name))
+        card = CardModel.get(CardModel.id == request.id)
         access = check_access_to_card(card, user_id)
         if bool(access & AccessType.WRITE):
             _delete_card(card)

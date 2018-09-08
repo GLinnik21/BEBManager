@@ -55,6 +55,7 @@ class App:
 
     def __init__(self):
         self.lib_model = Model(config.LIB_DATABASE)
+        self.lib_model.trigger_card_plan_creation()
         self.user_provider = UserProvider(config.APP_DATABASE)
         self.user_provider.open()
         self.authorization_manager = AuthorizationManager(config.CONFIG_FILE)
@@ -223,10 +224,9 @@ class App:
                                       interval,
                                       last_created_at)
 
-    def _get_board(self, board_id: Optional[int], board_name: Optional[str]) -> Board:
+    def _get_board(self, board_id: Optional[int], board_name: Optional[str]) -> List[Board]:
         try:
-            boards = self.lib_model.board_read(board_id, board_name, self.authorization_manager.get_current_user_id())
-            return boards[0]
+            return self.lib_model.board_read(board_id, board_name, self.authorization_manager.get_current_user_id())
         except beb_lib_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
@@ -267,17 +267,20 @@ class App:
 
     @check_authorization
     def print_board(self, board_id: Optional[int], board_name: Optional[str]):
-        board = self._get_board(board_id, board_name)
-        App._print_boards([board])
+        boards = self._get_board(board_id, board_name)
 
-        if len(board.lists) > 0:
-            print("\nLists in this board:")
-            card_lists = self.lib_model.list_read(board.unique_id,
-                                                  request_user_id=self.authorization_manager.get_current_user_id())
-            for card_list in card_lists:
-                print("ListID: {}   Name: {}".format(card_list.unique_id, card_list.name))
-        else:
-            print("There are no lists in this board")
+        if len(boards) > 1:
+            print("There are several board with this name:")
+        for board in boards:
+            App._print_boards([board])
+            if len(board.lists) > 0:
+                print("\nLists in this board:")
+                card_lists = self.lib_model.list_read(board.unique_id,
+                                                      request_user_id=self.authorization_manager.get_current_user_id())
+                for card_list in card_lists:
+                    print("ListID: {}   Name: {}".format(card_list.unique_id, card_list.name))
+            else:
+                print("There are no lists in this board")
 
     @check_authorization
     def print_all_boards(self):
@@ -294,26 +297,6 @@ class App:
 
     @check_authorization
     def add_board(self, board_name: str) -> None:
-
-        boards = None
-
-        try:
-            boards = self.lib_model.board_read(board_name=board_name,
-                                               request_user_id=self.authorization_manager.get_current_user_id())
-
-        except beb_lib_exceptions.AccessDeniedError:
-            print("This user can't create board with such name", file=sys.stderr)
-            quit(1)
-        except beb_lib_exceptions.BoardDoesNotExistError:
-            pass
-        except beb_lib_exceptions.Error as error:
-            print(error)
-            quit(1)
-
-        if boards is not None:
-            print("Board with this name already exists", file=sys.stderr)
-            quit(1)
-
         try:
             self.lib_model.board_write(board_name=board_name,
                                        request_user_id=self.authorization_manager.get_current_user_id())
@@ -331,7 +314,7 @@ class App:
 
     @check_authorization
     def edit_board(self, board_id: int, new_name: str) -> None:
-        board = self._get_board(board_id, None)
+        board = self._get_board(board_id, None)[0]
         try:
             self.lib_model.board_write(board.unique_id, new_name, self.authorization_manager.get_current_user_id())
         except beb_lib_exceptions.Error as error:
@@ -358,46 +341,31 @@ class App:
     def print_all_lists(self):
         self.print_current_board()
 
+    @check_board
     @check_authorization
     def print_list(self, list_id: int, list_name: str):
-        card_list = self.lib_model.list_read(None, list_id, list_name,
-                                             request_user_id=self.authorization_manager.get_current_user_id())[0]
-        print("ListID: {}   Name: {}".format(card_list.unique_id, card_list.name))
-        try:
-            cards = self.lib_model.card_read(list_id, request_user_id=self.authorization_manager.get_current_user_id())
+        card_lists = self.lib_model.list_read(None, list_id, list_name,
+                                              request_user_id=self.authorization_manager.get_current_user_id())
+        if len(card_lists) > 1:
+            print("There are several lists with this name:")
+        for card_list in card_lists:
+            print("ListID: {}   Name: {}".format(card_list.unique_id, card_list.name))
+            try:
+                cards = self.lib_model.card_read(list_id,
+                                                 request_user_id=self.authorization_manager.get_current_user_id())
 
-            if len(cards) > 0:
-                for card in cards:
-                    self._print_card(card)
-            else:
-                print("There are no cards in this list")
-        except beb_lib_exceptions.Error as error:
-            print(error, file=sys.stderr)
-            quit(1)
+                if len(cards) > 0:
+                    for card in cards:
+                        self._print_card(card)
+                else:
+                    print("There are no cards in this list")
+            except beb_lib_exceptions.Error as error:
+                print(error, file=sys.stderr)
+                quit(1)
 
     @check_board
     @check_authorization
     def add_list(self, name):
-        card_list = None
-
-        try:
-            card_list = self.lib_model.list_read(board_id=self.working_board_manager.get_current_board_id(),
-                                                 list_name=name,
-                                                 request_user_id=self.authorization_manager.get_current_user_id())
-
-        except beb_lib_exceptions.AccessDeniedError:
-            print("This user can't create list with such name", file=sys.stderr)
-            quit(1)
-        except beb_lib_exceptions.ListDoesNotExistError:
-            pass
-        except beb_lib_exceptions.Error as error:
-            print(error, file=sys.stderr)
-            quit(1)
-
-        if card_list is not None:
-            print("List with this name already exists", file=sys.stderr)
-            quit(1)
-
         try:
             self.lib_model.list_write(board_id=self.working_board_manager.get_current_board_id(),
                                       list_name=name,
@@ -438,9 +406,12 @@ class App:
     @check_authorization
     def print_card(self, card_id: Optional[int], card_name: Optional[str]):
         try:
-            card = self.lib_model.card_read(None, card_id, card_name,
-                                            self.authorization_manager.get_current_user_id())[0]
-            self._print_card(card)
+            cards = self.lib_model.card_read(None, card_id, card_name,
+                                             self.authorization_manager.get_current_user_id())
+            if len(cards) > 1:
+                print("There are several cards with this name:")
+            for card in cards:
+                self._print_card(card)
         except beb_lib_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
@@ -475,21 +446,21 @@ class App:
     def add_card(self, name: str, list_id: int, list_name: str, description: str,
                  priority: str, tags: List[str], children: List[int], exp_date: str, repeat: str, start: str):
         try:
-            self.lib_model.card_read(None, card_name=name,
-                                     request_user_id=self.authorization_manager.get_current_user_id())
-            print("Card already exists!", file=sys.stderr)
-            quit(1)
-        except beb_lib_exceptions.CardDoesNotExistError:
-            pass
-        except beb_lib_exceptions.Error as error:
-            print(error, file=sys.stderr)
-            quit(1)
+            card_lists = self.lib_model.list_read(self.working_board_manager.get_current_board_id(),
+                                                  list_id,
+                                                  list_name,
+                                                  self.authorization_manager.get_current_user_id())
 
-        try:
-            card_list = self.lib_model.list_read(self.working_board_manager.get_current_board_id(),
-                                                 list_id,
-                                                 list_name,
-                                                 self.authorization_manager.get_current_user_id())[0]
+            card_list = None
+
+            if len(card_lists) > 1:
+                print("There are several lists with this name:")
+                for card_list in card_lists:
+                    print("ListID: {}".format(card_list.unique_id))
+                print("Please, specify one of these ListIDs")
+                quit()
+            else:
+                card_list = card_lists[0]
 
             tag_ids = None
             try:
@@ -533,10 +504,22 @@ class App:
                   priority: str, add_tags: List[str], remove_tags: List[str], add_children: List[int],
                   remove_children: List[int], exp_date: str, delete_plan: bool, repeat: str, start: str):
         try:
-            card_list = self.lib_model.list_read(self.working_board_manager.get_current_board_id(),
-                                                 list_id,
-                                                 list_name,
-                                                 self.authorization_manager.get_current_user_id())[0]
+            card_list = None
+
+            if list_id is not None or list_name is not None:
+                card_lists = self.lib_model.list_read(self.working_board_manager.get_current_board_id(),
+                                                      list_id,
+                                                      list_name,
+                                                      self.authorization_manager.get_current_user_id())
+
+                if len(card_lists) > 1:
+                    print("There are several lists with this name:")
+                    for card_list in card_lists:
+                        print("ListID: {}".format(card_list.unique_id))
+                    print("Please, specify one of these ListIDs")
+                    quit()
+                else:
+                    card_list = card_lists[0].unique_id
 
             card = self.lib_model.card_read(None, card_id=card_id,
                                             request_user_id=self.authorization_manager.get_current_user_id())[0]
@@ -584,7 +567,7 @@ class App:
             if exp_date is not None:
                 card.expiration_date = exp_date
 
-            self.lib_model.card_write(card_list.unique_id, card, self.authorization_manager.get_current_user_id())
+            self.lib_model.card_write(card_list, card, self.authorization_manager.get_current_user_id())
 
             if delete_plan:
                 self.lib_model.plan_delete(card.unique_id, self.authorization_manager.get_current_user_id())
@@ -663,8 +646,12 @@ class App:
 
     def show_all_tags(self):
         tags = self.lib_model.tag_read()
-        for tag in tags:
-            print("TagID: {}    Name: {}".format(tag.unique_id, tag.name))
+        if tags:
+            for tag in tags:
+                print("TagID: {}    Name: {}".format(tag.unique_id, tag.name))
+        else:
+            print("There are no tags created")
+            quit()
 
     @check_authorization
     def print_cards_by_tag(self, tag_id: int, tag_name: str):
@@ -672,8 +659,12 @@ class App:
             tag = self.lib_model.tag_read(tag_id, tag_name)[0]
             cards = self.lib_model.card_read(None, tag_id=tag.unique_id,
                                              request_user_id=self.authorization_manager.get_current_user_id())
-            for card in cards:
-                self._print_card(card)
+            if cards:
+                for card in cards:
+                    self._print_card(card)
+            else:
+                print("There are no cards with this tag")
+                quit()
         except beb_lib_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)

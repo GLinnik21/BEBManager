@@ -24,7 +24,8 @@ from beb_lib.storage.provider_requests import (BoardDataRequest,
                                                ListDataRequest,
                                                TagDataRequest,
                                                PlanDataRequest,
-                                               GetAccessRightRequest
+                                               GetAccessRightRequest,
+                                               PlanTriggerRequest
                                                )
 
 BoardDataResponse = namedtuple('BoardDataResponse', RESPONSE_BASE_FIELDS + ['boards'])
@@ -70,6 +71,7 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
             CardDataRequest: lambda request: process_card_call(request),
             TagDataRequest: lambda request: process_tag_call(request),
             PlanDataRequest: lambda request: process_plan_call(request),
+            PlanTriggerRequest: lambda request: process_plan_call(request),
             AddAccessRightRequest: lambda request: add_right(request.object_type, request.object_id,
                                                              request.user_id, request.access_type),
             RemoveAccessRightRequest: lambda request: remove_right(request.object_type, request.object_id,

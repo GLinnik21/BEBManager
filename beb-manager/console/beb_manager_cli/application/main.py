@@ -107,7 +107,7 @@ def main():
                           add_children=args.add_children,
                           remove_children=args.remove_children,
                           exp_date=args.expiration_date,
-                          delete_plan=args.delete_args,
+                          delete_plan=args.delete_plan,
                           repeat=args.repeat,
                           start=args.start_repeat_at)
         elif args.command == 'delete':
@@ -124,7 +124,7 @@ def main():
                 app.remove_card_rights(mode[1:], args.user_id, args.list_id)
     elif args.object == 'tag':
         if args.command == 'show':
-            if args.all is not None:
+            if args.all:
                 app.show_all_tags()
             else:
                 app.print_cards_by_tag(args.id, args.name)

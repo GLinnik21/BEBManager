@@ -55,10 +55,10 @@ class CLIParser:
 
     def _add_all_parsers(self):
         self._add_user_parser()
+        self._add_board_parser()
+        self._add_list_parser()
         self._add_card_parser()
         self._add_tag_parser()
-        self._add_list_parser()
-        self._add_board_parser()
 
     def _add_card_parser(self):
         card_parser = self.object_subparsers.add_parser('card',
@@ -102,7 +102,6 @@ class CLIParser:
 
         card_editing_parser = card_subparsers.add_parser('edit', description='Change card', help='change card')
         cards_editing_list_group = card_editing_parser.add_mutually_exclusive_group()
-        cards_editing_list_group.required = True
 
         card_editing_parser.add_argument('card_id', type=int,
                                          help='unique identifier of the card that should be edited')
