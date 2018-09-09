@@ -30,9 +30,10 @@ def write_tag(request: TagDataRequest) -> (List[TagModel], BaseError):
             tag_model.color = request.color
         tag_model.save()
 
-        return Tag(tag_model.name, tag_model.id, tag_model.color), None
+        return [Tag(tag_model.name, tag_model.id, tag_model.color)], None
     except DoesNotExist:
-        tag_model = TagModel.create(name=request.name, color=random.randrange(0xFFFFFF + 1))
+        color = request.color if request.color is not None else random.randrange(0xFFFFFF + 1)
+        tag_model = TagModel.create(name=request.name, color=color)
         return [Tag(tag_model.name, tag_model.id, tag_model.color)], None
 
 

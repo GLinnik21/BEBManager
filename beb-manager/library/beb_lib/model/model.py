@@ -2,6 +2,7 @@ import datetime
 import random
 from typing import List, Optional
 
+from beb_lib.logger import log_func, LIBRARY_LOGGER_NAME
 from beb_lib.domain_entities.board import Board
 from beb_lib.domain_entities.card import Card
 from beb_lib.domain_entities.card_list import CardsList
@@ -44,6 +45,7 @@ class Model:
             self.storage_provider = StorageProvider(path_to_db)
         self.storage_provider.open()
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def get_right(self, object_id: int, object_type: type, user_id: int) -> AccessType:
         request = GetAccessRightRequest(request_id=random.randrange(1000000),
                                         request_type=RequestType.READ,
@@ -57,6 +59,7 @@ class Model:
 
         return access_type
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def add_right(self, object_id: int, object_type: type, user_id: int, access_type: AccessType) -> None:
         request = AddAccessRightRequest(request_id=random.randrange(1000000),
                                         request_type=RequestType.WRITE,
@@ -67,6 +70,7 @@ class Model:
 
         self.storage_provider.execute(request)
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def remove_right(self, object_id: int, object_type: type, user_id: int, access_type: AccessType) -> None:
         request = RemoveAccessRightRequest(request_id=random.randrange(1000000),
                                            request_type=RequestType.WRITE,
@@ -77,6 +81,7 @@ class Model:
 
         self.storage_provider.execute(request)
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def board_read(self, board_id: int = None, board_name: str = None, request_user_id: int = None) -> List[Board]:
         request = BoardDataRequest(request_id=random.randrange(1000000),
                                    request_user_id=request_user_id,
@@ -97,6 +102,7 @@ class Model:
 
         return response.boards
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def board_write(self, board_id: int = None, board_name: str = None, request_user_id: int = None) -> Board:
         request = BoardDataRequest(request_id=random.randrange(1000000),
                                    request_user_id=request_user_id,
@@ -115,6 +121,7 @@ class Model:
 
         return response.boards[0]
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def board_delete(self, board_id: int = None, board_name: str = None, request_user_id: int = None) -> None:
         request = BoardDataRequest(request_id=random.randrange(1000000),
                                    request_user_id=request_user_id,
@@ -133,6 +140,7 @@ class Model:
                 raise Error("""Undefined DB exception! 
                 Code: {} Description: {}""".format(error.code, error.description))
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def list_read(self, board_id: Optional[int], list_id: int = None, list_name: str = None,
                   request_user_id: int = None) -> List[CardsList]:
         request = ListDataRequest(request_id=random.randrange(1000000),
@@ -155,6 +163,7 @@ class Model:
 
         return response.lists
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def list_write(self, board_id: int, list_id: int = None, list_name: str = None,
                    request_user_id: int = None) -> CardsList:
         request = ListDataRequest(request_id=random.randrange(1000000),
@@ -175,6 +184,7 @@ class Model:
 
         return response.lists[0]
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def list_delete(self, list_id: int = None, list_name: str = None,
                     request_user_id: int = None) -> None:
 
@@ -199,6 +209,7 @@ class Model:
                 raise Error("""Undefined DB exception! 
                 Code: {} Description: {}""".format(error.code, error.description))
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def card_read(self, list_id: Optional[int], card_id: int = None, card_name: str = None, tag_id: int = None,
                   request_user_id: int = None) -> List[Card]:
         request = CardDataRequest(request_id=random.randrange(1000000),
@@ -233,6 +244,7 @@ class Model:
 
         return response.cards
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def card_write(self, list_id: Optional[int], card_instance: Card, request_user_id: int = None) -> Card:
         request = CardDataRequest(request_id=random.randrange(1000000),
                                   id=card_instance.unique_id,
@@ -258,6 +270,7 @@ class Model:
 
         return response.cards[0]
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def card_delete(self, card_id: int = None, card_name: str = None,
                     request_user_id: int = None) -> None:
         request = CardDataRequest(request_id=random.randrange(1000000),
@@ -284,6 +297,7 @@ class Model:
                 raise Error("""Undefined DB exception! 
                 Code: {} Description: {}""".format(error.code, error.description))
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def tag_read(self, tag_id: int = None, tag_name: str = None) -> List[Tag]:
         request = TagDataRequest(request_id=random.randrange(1000000),
                                  id=tag_id,
@@ -302,6 +316,7 @@ class Model:
 
         return response.tags
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def tag_write(self, tag_id: int = None, tag_name: str = None, color: int = None) -> Tag:
         request = TagDataRequest(request_id=random.randrange(1000000),
                                  id=tag_id,
@@ -317,6 +332,7 @@ class Model:
 
         return response.tags[0]
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def tag_delete(self, tag_id: int = None, tag_name: str = None) -> None:
         request = TagDataRequest(request_id=random.randrange(1000000),
                                  id=tag_id,
@@ -333,6 +349,7 @@ class Model:
                 raise Error("""Undefined DB exception! 
                 Code: {} Description: {}""".format(error.code, error.description))
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def plan_read(self, card_id: int, user_id: int) -> Plan:
         request = PlanDataRequest(request_id=random.randrange(1000000),
                                   request_user_id=user_id,
@@ -356,6 +373,7 @@ class Model:
 
         return response.plan
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def plan_write(self, card_id: int, user_id: int, interval: datetime.timedelta,
                    last_created: datetime.datetime) -> Plan:
         request = PlanDataRequest(request_id=random.randrange(1000000),
@@ -378,6 +396,7 @@ class Model:
 
         return response.plan
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def plan_delete(self, card_id: int, user_id: int) -> None:
         request = PlanDataRequest(request_id=random.randrange(1000000),
                                   request_user_id=user_id,
@@ -399,36 +418,39 @@ class Model:
                 raise Error("""Undefined DB exception! 
                                     Code: {} Description: {}""".format(error.code, error.description))
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def trigger_card_plan_creation(self):
         request = PlanTriggerRequest(request_id=random.randrange(1000000), request_type=RequestType.WRITE)
         self.storage_provider.execute(request)
 
     # region convenience methods
+    @log_func(LIBRARY_LOGGER_NAME)
     def archive_card(self, card_id: int = None, card_name: str = None,
                      request_user_id: int = None) -> None:
         cards = self.card_read(card_id, card_name, request_user_id)
         self.card_write(self.storage_provider.archived_list_id, cards[0], request_user_id)
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def get_cards_owned_by_user(self, user_id: int) -> List[Card]:
         cards = self.card_read(None, request_user_id=user_id)
         return list(filter(lambda card: card.user_id == user_id, cards))
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def get_cards_assigned_user(self, user_id: int) -> List[Card]:
         cards = self.card_read(None, request_user_id=user_id)
         return list(filter(lambda card: card.assignee_id == user_id, cards))
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def get_archived_cards(self, user_id: int = None) -> List[Card]:
         return self.card_read(self.storage_provider.archived_list_id, request_user_id=user_id)
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def get_readable_cards(self, user_id: int) -> List[Card]:
         cards = self.card_read(None, request_user_id=user_id)
         return list(filter(lambda card: bool(self.get_right(card.unique_id, Card, user_id) & AccessType.READ), cards))
 
+    @log_func(LIBRARY_LOGGER_NAME)
     def get_writable_cards(self, user_id: int) -> List[Card]:
         cards = self.card_read(None, request_user_id=user_id)
         return list(filter(lambda card: bool(self.get_right(card.unique_id, Card, user_id) & AccessType.WRITE), cards))
     # end region
-
-# if __name__ == '__main__':
-#     model = Model("/Users/gleblinnik/Developer/isp/beb-manager/library/db.db")
-#     print(model.plan_write(1, 1, datetime.timedelta(days=5), datetime.datetime.fromtimestamp(100000)))

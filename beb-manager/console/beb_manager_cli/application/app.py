@@ -3,8 +3,10 @@ import sys
 from datetime import datetime
 from typing import List, Optional
 
-import beb_lib.model.exceptions as beb_lib_exceptions
 import dateparser
+
+import beb_lib.model.exceptions as beb_exceptions
+import beb_lib.logger as beb_logger
 from beb_lib.domain_entities.board import Board
 from beb_lib.domain_entities.card import Card
 from beb_lib.domain_entities.card_list import CardsList
@@ -54,6 +56,7 @@ def bordered(text):
 class App:
 
     def __init__(self):
+        beb_logger.init_logging(config.LOG_LEVEL, config.LOG_FILE, config.LOG_FORMAT, config.LOG_DATEFMT)
         self.lib_model = Model(config.LIB_DATABASE)
         self.lib_model.trigger_card_plan_creation()
         self.user_provider = UserProvider(config.APP_DATABASE)
@@ -191,7 +194,7 @@ class App:
             try:
                 tags = [self.lib_model.tag_read(tag)[0].name for tag in card.tags]
                 text += "\nTags: {}".format(tags)
-            except beb_lib_exceptions.TagDoesNotExistError:
+            except beb_exceptions.TagDoesNotExistError:
                 pass
 
         text += "\nCreated: {}".format(card.created.strftime("%c"))
@@ -227,7 +230,7 @@ class App:
     def _get_board(self, board_id: Optional[int], board_name: Optional[str]) -> List[Board]:
         try:
             return self.lib_model.board_read(board_id, board_name, self.authorization_manager.get_current_user_id())
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -291,7 +294,7 @@ class App:
             else:
                 print("There are no boards created.")
                 quit()
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -300,7 +303,7 @@ class App:
         try:
             self.lib_model.board_write(board_name=board_name,
                                        request_user_id=self.authorization_manager.get_current_user_id())
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -308,7 +311,7 @@ class App:
     def delete_board(self, board_id: int) -> None:
         try:
             self.lib_model.board_delete(board_id, None, self.authorization_manager.get_current_user_id())
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -317,7 +320,7 @@ class App:
         board = self._get_board(board_id, None)[0]
         try:
             self.lib_model.board_write(board.unique_id, new_name, self.authorization_manager.get_current_user_id())
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -325,7 +328,7 @@ class App:
     def switch_board(self, board_id: int):
         try:
             self.lib_model.board_read(board_id, None, self.authorization_manager.get_current_user_id())
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -359,7 +362,7 @@ class App:
                         self._print_card(card)
                 else:
                     print("There are no cards in this list")
-            except beb_lib_exceptions.Error as error:
+            except beb_exceptions.Error as error:
                 print(error, file=sys.stderr)
                 quit(1)
 
@@ -370,7 +373,7 @@ class App:
             self.lib_model.list_write(board_id=self.working_board_manager.get_current_board_id(),
                                       list_name=name,
                                       request_user_id=self.authorization_manager.get_current_user_id())
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -384,7 +387,7 @@ class App:
 
             self.lib_model.list_write(self.working_board_manager.get_current_board_id(), list_id, new_name,
                                       self.authorization_manager.get_current_user_id())
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -393,7 +396,7 @@ class App:
     def delete_list(self, list_id: int):
         try:
             self.lib_model.list_delete(list_id, None, self.authorization_manager.get_current_user_id())
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -412,7 +415,7 @@ class App:
                 print("There are several cards with this name:")
             for card in cards:
                 self._print_card(card)
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -466,7 +469,7 @@ class App:
             try:
                 if tags is not None:
                     tag_ids = [self.lib_model.tag_read(tag_name=tag_name)[0].unique_id for tag_name in tags]
-            except beb_lib_exceptions.TagDoesNotExistError:
+            except beb_exceptions.TagDoesNotExistError:
                 print('One of the tags does not exist', file=sys.stderr)
                 quit(1)
 
@@ -475,10 +478,10 @@ class App:
                     for child in children:
                         self.lib_model.card_read(None, child,
                                                  request_user_id=self.authorization_manager.get_current_user_id())
-                except beb_lib_exceptions.CardDoesNotExistError:
+                except beb_exceptions.CardDoesNotExistError:
                     print('One of the children cards does not exist', file=sys.stderr)
                     quit(1)
-                except beb_lib_exceptions.AccessDeniedError:
+                except beb_exceptions.AccessDeniedError:
                     print("You can't read one of the children cards", file=sys.stderr)
                     quit(1)
 
@@ -495,7 +498,7 @@ class App:
             if repeat is not None:
                 self._create_plan(repeat, start, card.unique_id)
 
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -532,7 +535,7 @@ class App:
                     tag_ids = [self.lib_model.tag_read(tag_name=tag_name)[0].unique_id for tag_name in remove_tags]
                     for tag in tag_ids:
                         card.tags.remove(tag)
-            except beb_lib_exceptions.TagDoesNotExistError:
+            except beb_exceptions.TagDoesNotExistError:
                 print('One of the tags does not exist', file=sys.stderr)
                 quit(1)
             except ValueError:
@@ -548,10 +551,10 @@ class App:
                 if remove_children is not None:
                     for child in remove_children:
                         card.children.remove(child)
-            except beb_lib_exceptions.CardDoesNotExistError:
+            except beb_exceptions.CardDoesNotExistError:
                 print('One of the children cards does not exist', file=sys.stderr)
                 quit(1)
-            except beb_lib_exceptions.AccessDeniedError:
+            except beb_exceptions.AccessDeniedError:
                 print("You can't read one of the children cards", file=sys.stderr)
                 quit(1)
             except ValueError:
@@ -574,7 +577,7 @@ class App:
             elif repeat is not None:
                 self._create_plan(repeat, start, card.unique_id)
 
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -583,7 +586,7 @@ class App:
         try:
             self.lib_model.card_delete(card_id=card_id,
                                        request_user_id=self.authorization_manager.get_current_user_id())
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -591,7 +594,7 @@ class App:
     def archive_card(self, card_id: int):
         try:
             self.lib_model.archive_card(card_id, request_user_id=self.authorization_manager.get_current_user_id())
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -609,7 +612,7 @@ class App:
                                             request_user_id=self.authorization_manager.get_current_user_id())[0]
             card.assignee_id = user_id
             self.lib_model.card_write(None, card, request_user_id=self.authorization_manager.get_current_user_id())
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -618,9 +621,9 @@ class App:
             self.lib_model.tag_read(tag_name=name)
             print("Tag already exists!", file=sys.stderr)
             quit(1)
-        except beb_lib_exceptions.TagDoesNotExistError:
+        except beb_exceptions.TagDoesNotExistError:
             pass
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -630,17 +633,17 @@ class App:
         try:
             self.lib_model.tag_read(tag_id=tag_id)
             self.lib_model.tag_write(tag_id=tag_id, tag_name=name)
-        except beb_lib_exceptions.TagDoesNotExistError:
+        except beb_exceptions.TagDoesNotExistError:
             print("This tag doesn't exist", file=sys.stderr)
             quit(1)
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
     def delete_tag(self, tag_id: int):
         try:
             self.lib_model.tag_delete(tag_id)
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)
 
@@ -665,6 +668,6 @@ class App:
             else:
                 print("There are no cards with this tag")
                 quit()
-        except beb_lib_exceptions.Error as error:
+        except beb_exceptions.Error as error:
             print(error, file=sys.stderr)
             quit(1)

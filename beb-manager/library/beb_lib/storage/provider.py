@@ -53,11 +53,22 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
     """
 
     def __init__(self, path_to_db: str):
-        self.database_path = path_to_db
+        self._models = [BoardModel,
+                        CardListModel,
+                        TagModel,
+                        CardModel,
+                        TagCard,
+                        ParentChild,
+                        CardUserAccess,
+                        CardListUserAccess,
+                        BoardUserAccess,
+                        PlanModel]
         self.database = SqliteDatabase(path_to_db)
+        self.database_path = path_to_db
+        DATABASE_PROXY.initialize(self.database)
         self.is_connected = False
         self.archived_list_id = None
-        DATABASE_PROXY.initialize(self.database)
+
         # To prevent import cycle
         from beb_lib.storage.processors.board_processor import process_board_call
         from beb_lib.storage.processors.card_processor import process_card_call
@@ -84,16 +95,7 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
         if not self.is_connected:
             self.database.connect()
             self.is_connected = True
-        self.database.create_tables([BoardModel,
-                                     CardListModel,
-                                     TagModel,
-                                     CardModel,
-                                     TagCard,
-                                     ParentChild,
-                                     CardUserAccess,
-                                     CardListUserAccess,
-                                     BoardUserAccess,
-                                     PlanModel])
+        self.database.create_tables(self._models)
         self.archived_list_id = CardListModel.get_or_create(name='Archived')[0].id
 
     def close(self) -> None:
@@ -112,3 +114,7 @@ class StorageProvider(IProvider, IStorageProviderProtocol):
                                    description='This request cannot be handled by this provider')
 
         return handler(request)
+
+    def _drop_tables(self):
+        self.database.drop_tables(self._models)
+        self.close()

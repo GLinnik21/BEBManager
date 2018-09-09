@@ -22,10 +22,10 @@ METHOD_MAP = {
 }
 
 
-def _create_board_with_defaults(board_name: str, user_id: int) -> List[Board]:
+def _create_board_with_defaults(board_name: str, user_id: int) -> Board:
     board = BoardModel.create(name=board_name)
     BoardUserAccess.create(user_id=user_id, board=board)
-    board_response = [Board(board.name, board.id)]
+    board_response = Board(board.name, board.id)
 
     for name in CARD_LIST_DEFAULTS:
         CardListModel.create(name=name, board=board)
@@ -88,6 +88,8 @@ def delete_board(request: BoardDataRequest, user_id: int) -> (List[Board], BaseE
     except DoesNotExist:
         return None, BaseError(code=StorageProviderErrors.BOARD_DOES_NOT_EXIST,
                                description="Board doesn't exist")
+
+    return None, None
 
 
 def process_board_call(request: BoardDataRequest) -> (BoardDataResponse, BaseError):

@@ -26,17 +26,21 @@ After installation you may import library in Python shell:
 import beb_lib
 ```
 
-### Install CLI application
+### Install CLI application ###
 
 ```bash
 $ cd beb-manager/cli
 $ python3 setup.py install
 ```
 
-After that you may use **Beb manager** from the command line as follows:
+### Usage ###
+
+After installation you may use **Beb manager** from the command line as follows:
 
 ```bash
 $ beb-manager
 usage: beb-manager [-h] <object> ...
 beb-manager: error: the following arguments are required: <object>
 ```
+
+### Supported commands ###
