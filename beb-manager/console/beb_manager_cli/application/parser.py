@@ -41,7 +41,7 @@ class ValidateAccessModeAction(argparse.Action):
 class CLIParser:
 
     def __init__(self):
-        self.parser = argparse.ArgumentParser(description='Achieve your goals with BebSelf issues tracker')
+        self.parser = argparse.ArgumentParser(description='Achieve your goals with Beb manager issues tracker')
         self.object_subparsers = self.parser.add_subparsers(dest='object',
                                                             metavar="<object>",
                                                             title="available objects are")
@@ -84,8 +84,8 @@ class CLIParser:
         cards_creation_parser.add_argument('-d', '--description', help='description of the task in the card')
         cards_creation_parser.add_argument('-p', '--priority', choices=['low', 'medium', 'high'], default='medium',
                                            help='priority of the card (default is "medium")')
-        cards_creation_parser.add_argument('-t', '--tags', help='names of the tags to add', nargs='*')
-        cards_creation_parser.add_argument('-c', '--children', help='ids of the children cards', type=int, nargs='*')
+        cards_creation_parser.add_argument('-t', '--tags', help='names of the tags to add', nargs='+')
+        cards_creation_parser.add_argument('-c', '--children', help='ids of the children cards', type=int, nargs='+')
         cards_creation_parser.add_argument("-e", "--expiration_date",
                                            help="The Expiration Date - format YYYY-MM-DD,hh:mm",
                                            action=ValidateDateAction)
@@ -115,13 +115,13 @@ class CLIParser:
         card_editing_parser.add_argument('-p', '--priority', choices=['low', 'medium', 'high'],
                                          help='new priority of the card')
         card_editing_parser_tag_group = card_editing_parser.add_mutually_exclusive_group()
-        card_editing_parser_tag_group.add_argument('-at', '--add_tags', help='name of the tags to add', nargs='*')
-        card_editing_parser_tag_group.add_argument('-rt', '--remove_tags', help='name of the tags to remove', nargs='*')
+        card_editing_parser_tag_group.add_argument('-at', '--add_tags', help='name of the tags to add', nargs='+')
+        card_editing_parser_tag_group.add_argument('-rt', '--remove_tags', help='name of the tags to remove', nargs='+')
         card_editing_parser_children_group = card_editing_parser.add_mutually_exclusive_group()
         card_editing_parser_children_group.add_argument('-ac', '--add_children', type=int,
-                                                        help='ids of the cards to add', nargs='*')
+                                                        help='ids of the cards to add', nargs='+')
         card_editing_parser_children_group.add_argument('-rc', '--remove_children', type=int,
-                                                        help='ids of the cards to remove', nargs='*')
+                                                        help='ids of the cards to remove', nargs='+')
         card_editing_parser.add_argument("-e", "--expiration_date",
                                          help="The new Expiration Date - format YYYY-MM-DD,hh:mm",
                                          action=ValidateDateAction)

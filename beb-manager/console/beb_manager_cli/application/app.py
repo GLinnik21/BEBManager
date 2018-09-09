@@ -164,7 +164,7 @@ class App:
             print("UserID: {}   Name: {}".format(user.unique_id, user.name))
 
     def _print_card(self, card: Card):
-        text = "CardID: {}   Name: {}".format(card.user_id, card.name)
+        text = "CardID: {}   Name: {}".format(card.unique_id, card.name)
         if card.description is not None:
             text += "\nDescription: {}".format(card.description)
 

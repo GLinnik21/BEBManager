@@ -8,5 +8,6 @@ setup(
     author_email='gleb_linnik@icloud.com',
     url='https://bitbucket.org/GLinnik/isp',
     install_requires=['peewee'],
-    packages=find_packages(exclude='tests')
+    packages=find_packages(exclude='tests'),
+    test_suite='tests.run_tests'
 )

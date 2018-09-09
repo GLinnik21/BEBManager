@@ -22,7 +22,7 @@ def create_cards_by_plans():
     for plan in PlanModel.select():
         if (plan.last_created_at + datetime.timedelta(seconds=plan.interval)) < datetime.datetime.now():
             try:
-                last_created_at = plan.last_created_at + datetime.timedelta(seconds=plan.interval)
+                last_created_at = plan.last_created_at
                 while last_created_at + datetime.timedelta(seconds=plan.interval) < datetime.datetime.now():
                     card = plan.card
                     card.id = None
