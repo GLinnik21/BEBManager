@@ -1,3 +1,6 @@
+"""
+This module provides all methods to work with library
+"""
 import datetime
 import random
 from typing import List, Optional
