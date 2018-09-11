@@ -140,3 +140,5 @@ fabric.properties
 .idea/httpRequests
 
 beb-manager/library/db\.db
+
+beb-manager/web_app/db\.sqlite3
