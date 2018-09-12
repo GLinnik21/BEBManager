@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bootstrap4',
+    'fontawesome',
     'beb_manager.apps.BebManagerConfig',
 ]
 
@@ -81,6 +82,8 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+BEB_LIB_DATABASE_PATH = os.path.join(BASE_DIR, 'db.sqlite3')
 
 
 # Password validation

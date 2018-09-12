@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	    <meta charset="utf-8">
+	    <title>{% block title %}Sing up{% endblock %}</title>
+	    {% load static %}
+	    {% load bootstrap4 %}
+	    {% bootstrap_css %}
+	    {% bootstrap_javascript jquery='full' %}
+	    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+	</head>
+	<body>
+		<main>
+			<div class='container'>
+				<h2>Sign up</h2>
+				<form method="post">
+				    {% csrf_token %}
+				    {% bootstrap_form form %}
+				    {% buttons %}
+				    <button type="submit" class="btn btn-success">Sign up</button>
+				    <a class="btn btn-outline-success" href="{% url 'beb_manager:login' %}" role="button">Login</a>
+				    {% endbuttons %}
+				</form>
+			</div>
+		</main>
+	</body>
+</html>
