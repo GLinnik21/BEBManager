@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Board{% endblock %}
+
+{% block content %}
+    <h2>Editing Board</h2>
+    <form method="post">
+            {% csrf_token %}
+            {% load bootstrap4 %}
+            {% bootstrap_form form %}
+            {% buttons %}
+                <button type="submit" class="btn btn-success">Submit</button>
+            {% endbuttons %}
+    </form>
+{% endblock %}

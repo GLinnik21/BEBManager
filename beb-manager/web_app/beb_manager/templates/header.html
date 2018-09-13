@@ -12,7 +12,8 @@
             <ul class="navbar-nav mr-auto">
                 <a class="navbar-brand" href="#">Beb Manager</a>
             </ul>
-            <ul class="navbar-nav ">
+            <ul class="navbar-nav">
+                <a href="{% url 'beb_manager:add_board' %}" class="btn btn-outline-light">{% fontawesome_icon 'plus' %}</a>
                 <li class="nav-item dropdown active">
                     <a href="#" class="nav-link dropdown-toggle" id="navDropDownLink" data-toggle="dropdown"
                        aria-haspopup="true" aria-expanded="false">Profile</a>
