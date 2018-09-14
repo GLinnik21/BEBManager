@@ -1,23 +1,48 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <title>{% block title %}Base view{% endblock %}</title>
-        {% load static %}
-        {% load bootstrap4 %}
-        {% load fontawesome %}
-        {% fontawesome_stylesheet %}
-        {% bootstrap_css %}
-        {% bootstrap_javascript jquery='full' %}
-        <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    </head>
-    <body>
-        {% include "header.html" %}
-        <main>
-            <div class='container'>
-                {% block content %}
-                {% endblock %}
-            </div>
-        </main>
-    </body>
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Base view{% endblock %}</title>
+    {% load static %}
+    {% load bootstrap4 %}
+    {% load fontawesome %}
+    {% fontawesome_stylesheet %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript jquery='full' %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="nav nav-pills mr-auto">
+            <a class="btn btn-outline-light" href="{% url 'beb_manager:boards' %}">Boards</a>
+        </ul>
+        <ul class="navbar-nav mr-auto">
+            <a class="navbar-brand" href="#">Beb Manager</a>
+        </ul>
+        <ul class="navbar-nav">
+            <a class="btn btn-outline-light" href="{% block plus_url %}#{% endblock %}">
+                {% fontawesome_icon 'plus' %}
+            </a>
+            <li class="nav-item dropdown active">
+                <a href="#" class="nav-link dropdown-toggle" id="navDropDownLink" data-toggle="dropdown"
+                   aria-haspopup="true" aria-expanded="false">Profile</a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navDropDownLink">
+                    <a class="dropdown-item" href="{% url 'beb_manager:logout' %}">Logout</a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>
+<main>
+    <div class='container'>
+        {% block content %}
+        {% endblock %}
+    </div>
+</main>
+</body>
 </html>

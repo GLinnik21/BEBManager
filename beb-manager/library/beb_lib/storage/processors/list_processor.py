@@ -24,7 +24,7 @@ METHOD_MAP = {
 
 
 def _delete_list(card_list: CardListModel):
-    CardListUserAccess.delete().where(CardListUserAccess.card_list == card_list)
+    CardListUserAccess.delete().where(CardListUserAccess.card_list == card_list).execute()
     for card in card_list.cards:
         _delete_card(card)
     card_list.delete_instance()

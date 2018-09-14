@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Create List{% endblock %}
+
+{% block content %}
+    <h2>Create List</h2>
+    <form method="post">
+            {% csrf_token %}
+            {% load bootstrap4 %}
+            {% bootstrap_form form %}
+            {% buttons %}
+                <button type="submit" class="btn btn-success">Create</button>
+            {% endbuttons %}
+    </form>
+{% endblock %}

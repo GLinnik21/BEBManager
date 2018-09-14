@@ -11,14 +11,17 @@ registration_patterns = [
     url(r'^signup/$', views.signup, name='signup'),
 ]
 
+concrete_lists_patterns = [
+    url(r'^edit/$', views.edit_list, name='edit_list'),
+    url(r'^delete/$', views.delete_list, name='delete_list'),
+]
+
 concrete_board_patterns = [
-    # url(r'^$', views.tasks, name='tasks'),
+    url(r'^$', views.lists, name='lists'),
     url(r'^edit/$', views.edit_board, name='edit_board'),
     url(r'^delete/$', views.delete_board, name='delete_board'),
-    # url(r'^task_list/', include(task_lists_patterns)),
-    # url(r'^task/(?P<task_id>[0-9]+)/', include(exact_task_patterns)),
-    # url(r'^plan/', include(plans_patterns)),
-    # url(r'^user/', include(users_patterns))
+    url(r'^add/$', views.add_list, name='add_list'),
+    url(r'^list/(?P<list_id>[0-9]+)/', include(concrete_lists_patterns)),
 ]
 
 board_patterns = [

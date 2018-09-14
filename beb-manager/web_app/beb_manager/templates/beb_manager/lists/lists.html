@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load fontawesome %}
+
+{% block title %}Lists{% endblock %}
+{% block plus_url %}{% url 'beb_manager:add_list' board_id %}{% endblock %}
+
+{% block content %}
+    <h2>Lists</h2>
+
+    <div class="card-deck">
+        {% for beb_list in beb_lists %}
+            <div class="card">
+                <div class="card-header">
+                    <a href="{% url 'beb_manager:edit_list' board_id beb_list.list.unique_id %}"
+                       class="btn btn-secondary btn-sm float-right">
+                        {% fontawesome_icon 'edit' %}
+                    </a>
+                    <form method="post"
+                          action="{% url 'beb_manager:delete_list' board_id beb_list.list.unique_id %}">
+                        {% csrf_token %}
+                        {{ beb_list.list.name }}
+                        <button class="btn btn-danger btn-sm float-right"
+                                onclick="return confirm('Are you sure you want to delete this task list?');">
+                            {% fontawesome_icon 'trash' %}
+                        </button>
+                    </form>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for card in beb_list.cards %}
+                        <li class="list-group-item">{{ card.name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
