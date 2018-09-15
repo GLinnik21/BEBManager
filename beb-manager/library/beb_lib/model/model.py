@@ -353,9 +353,9 @@ class Model:
                 Code: {} Description: {}""".format(error.code, error.description))
 
     @log_func(LIBRARY_LOGGER_NAME)
-    def plan_read(self, card_id: int, user_id: int) -> Plan:
+    def plan_read(self, card_id: int, request_user_id: int) -> Plan:
         request = PlanDataRequest(request_id=random.randrange(1000000),
-                                  request_user_id=user_id,
+                                  request_user_id=request_user_id,
                                   interval=None,
                                   last_created=None,
                                   card_id=card_id,
@@ -377,10 +377,10 @@ class Model:
         return response.plan
 
     @log_func(LIBRARY_LOGGER_NAME)
-    def plan_write(self, card_id: int, user_id: int, interval: datetime.timedelta,
+    def plan_write(self, card_id: int, request_user_id: int, interval: datetime.timedelta,
                    last_created: datetime.datetime) -> Plan:
         request = PlanDataRequest(request_id=random.randrange(1000000),
-                                  request_user_id=user_id,
+                                  request_user_id=request_user_id,
                                   interval=interval,
                                   last_created=last_created,
                                   card_id=card_id,
@@ -400,9 +400,9 @@ class Model:
         return response.plan
 
     @log_func(LIBRARY_LOGGER_NAME)
-    def plan_delete(self, card_id: int, user_id: int) -> None:
+    def plan_delete(self, card_id: int, request_user_id: int) -> None:
         request = PlanDataRequest(request_id=random.randrange(1000000),
-                                  request_user_id=user_id,
+                                  request_user_id=request_user_id,
                                   interval=None,
                                   last_created=None,
                                   card_id=card_id,
@@ -434,6 +434,19 @@ class Model:
         self.card_write(self.storage_provider.archived_list_id, cards[0], request_user_id)
 
     @log_func(LIBRARY_LOGGER_NAME)
+    def get_cards_in_board(self, board_id: int, user_id: int) -> List[Card]:
+        lists = self.list_read(board_id, request_user_id=user_id)
+        cards = []
+
+        for card_list in lists:
+            try:
+                cards += self.card_read(card_list.unique_id, request_user_id=user_id)
+            except CardDoesNotExistError:
+                pass
+
+        return cards
+
+    @log_func(LIBRARY_LOGGER_NAME)
     def get_cards_owned_by_user(self, user_id: int) -> List[Card]:
         cards = self.card_read(None, request_user_id=user_id)
         return list(filter(lambda card: card.user_id == user_id, cards))
@@ -444,7 +457,7 @@ class Model:
         return list(filter(lambda card: card.assignee_id == user_id, cards))
 
     @log_func(LIBRARY_LOGGER_NAME)
-    def get_archived_cards(self, user_id: int = None) -> List[Card]:
+    def get_archived_cards(self, user_id: int) -> List[Card]:
         return self.card_read(self.storage_provider.archived_list_id, request_user_id=user_id)
 
     @log_func(LIBRARY_LOGGER_NAME)

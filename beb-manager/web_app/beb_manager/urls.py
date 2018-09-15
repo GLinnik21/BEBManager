@@ -14,6 +14,7 @@ registration_patterns = [
 concrete_lists_patterns = [
     url(r'^edit/$', views.edit_list, name='edit_list'),
     url(r'^delete/$', views.delete_list, name='delete_list'),
+    url(r'^add/$', views.add_card, name='add_card'),
 ]
 
 concrete_board_patterns = [

@@ -47,7 +47,7 @@ Creating plan for periodical card:
     >>> board = model.board_write(board_name="Hello board", request_user_id=1)
     >>> card = Card("Hello card")
     >>> card = model.card_write(list_id=2, card_instance=card, request_user_id=1)
-    >>> model.plan_write(card_id=card.unique_id, user_id=1, interval=datetime.timedelta(days=1), last_created=datetime.datetime.now())
+    >>> model.plan_write(card_id=card.unique_id,request_user_id=1,interval=datetime.timedelta(days=1),last_created=datetime.datetime.now())
 """
 
 __author__ = 'Gleb Linnik'

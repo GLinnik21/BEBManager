@@ -30,6 +30,12 @@
                         <li class="list-group-item">{{ card.name }}</li>
                     {% endfor %}
                 </ul>
+                <div class="card-footer">
+                    <a href="{% url 'beb_manager:add_card' board_id beb_list.list.unique_id %}"
+                       class="btn btn-success btn-sm float-right">
+                        {% fontawesome_icon 'plus' %}
+                    </a>
+                </div>
             </div>
         {% endfor %}
     </div>
