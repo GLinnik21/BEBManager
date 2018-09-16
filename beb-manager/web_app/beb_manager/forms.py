@@ -5,6 +5,7 @@ import beb_lib.model.exceptions as beb_exceptions
 from beb_lib.model.model import Model
 from django import forms
 from django.contrib.auth.models import User
+from django.forms import DateField, DateInput
 from tempus_dominus.widgets import DateTimePicker
 
 from web_app import settings
@@ -38,25 +39,16 @@ class CardForm(forms.Form):
         self.fields['card_list'] = forms.ChoiceField(choices=lists_tuple, required=False)
         self.fields['children_cards'] = forms.MultipleChoiceField(choices=cards_tuple, required=False)
 
-    name = forms.CharField(max_length=200, widget=forms.TextInput(
-        attrs={'placeholder': 'Task title'}))
-    description = forms.CharField(required=False,
-                                  widget=forms.TextInput(attrs={
-                                      'placeholder': 'Task description'}))
+    name = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'placeholder': 'Card title'}))
+    description = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Card description'}))
     tags = forms.MultipleChoiceField()
     card_list = forms.ChoiceField()
-    priority = forms.ChoiceField(choices=[(p.value, Priority(p).name) for p in Priority],
-                                 required=False)
-    exp_time = forms.DateTimeField(
-        widget=DateTimePicker(
-            options={
-                'minDate': (
-                        datetime.date.today() +
-                        datetime.timedelta(
-                            days=1)).strftime('%Y-%m-%d'),
-                'useCurrent': False,
-            }),
-        required=False)
+    priority = forms.ChoiceField(choices=[(p.value, Priority(p).name) for p in Priority], required=False)
+    expiration_date = forms.DateTimeField(widget=DateTimePicker(options={'minDate': (datetime.date.today() +
+                                                                                     datetime.timedelta(
+                                                                                         days=1)).strftime('%Y-%m-%d'),
+                                                                         'useCurrent': False, }),
+                                          required=False)
     children_cards = forms.MultipleChoiceField()
     assignee = forms.ModelChoiceField(
         queryset=User.objects.all(), required=False)
@@ -64,3 +56,9 @@ class CardForm(forms.Form):
         queryset=User.objects.all(), required=False)
     can_write = forms.ModelMultipleChoiceField(
         queryset=User.objects.all(), required=False)
+
+
+class CardFormWithoutLists(CardForm):
+    def __init__(self, *args, **kwargs):
+        super(CardFormWithoutLists, self).__init__(*args, **kwargs)
+        self.fields.pop('card_list')

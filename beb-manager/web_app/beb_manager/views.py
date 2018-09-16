@@ -1,4 +1,5 @@
 import beb_lib.model.exceptions as beb_exceptions
+from beb_lib.domain_entities.card import Card
 from beb_lib.model.model import Model
 from django.conf import settings
 from django.contrib.auth import authenticate, login
@@ -7,7 +8,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
-from beb_manager.forms import SingleInputForm, CardForm
+from beb_manager.forms import SingleInputForm, CardFormWithoutLists
 
 MODEL = Model(settings.BEB_LIB_DATABASE_PATH)
 
@@ -144,39 +145,40 @@ def edit_list(request, board_id, list_id):
 @login_required
 def add_card(request, board_id, list_id):
     if request.method == 'POST':
-        form = CardForm(request.user.id, board_id, request.POST)
+        form = CardFormWithoutLists(request.user.id, board_id, request.POST)
         if form.is_valid():
             name = form.cleaned_data['name']
             description = form.cleaned_data['description']
-            tags = form.cleaned_data['tags']
-            card_list = form.cleaned_data['card_list']
-            children_cards = form.cleaned_data['children_cards']
-            exp_date = form.cleaned_data['exp_time']
+            tags = []
+            for tag in form.cleaned_data['tags']:
+                try:
+                    tags.append(int(tag))
+                except ValueError:
+                    pass
+            children_cards = []
+            for card in form.cleaned_data['children_cards']:
+                try:
+                    children_cards.append(int(card))
+                except ValueError:
+                    pass
+            exp_date = form.cleaned_data['expiration_date']
             priority = form.cleaned_data['priority']
-            assignee = form.cleaned_data['assignee']
+            assignee_user = form.cleaned_data['assignee']
+            assignee = assignee_user.id if assignee_user is not None else None
             can_read = form.cleaned_data['can_read']
             can_write = form.cleaned_data['can_write']
-            print('TAGS: {}'.format(tags))
+
+            new_card = Card(name=name,
+                            description=description,
+                            assignee_id=assignee,
+                            expiration_date=exp_date,
+                            priority=priority,
+                            tags=tags,
+                            children=children_cards)
+
+            MODEL.card_write(list_id, new_card, request.user.id)
+
             return redirect('beb_manager:lists', board_id)
     else:
-        form = CardForm(request.user.id, board_id, request.POST)
-        # status = Status.TODO.value,
-        # priority = Priority.MEDIUM.value
-        # category = None
-        # parent_task = None
-        # if request.GET.get('category') is not None:
-        #     category = request.GET.get('category')
-        # if request.GET.get('status') is not None:
-        #     status = request.GET.get('status')
-        # if request.GET.get('priority') is not None:
-        #     priority = request.GET.get('priority')
-        # if request.GET.get('parent_task_id') is not None:
-        #     parent_task = request.GET.get('parent_task_id')
-        # form = TaskForm(request.user.id)
-        # form.fields["status"].initial = status
-        # form.fields["priority"].initial = priority
-        # if category is not None:
-        #     form.fields["category"].initial = category
-        # if parent_task is not None:
-        #     form.fields["parent_task"].initial = parent_task
+        form = CardFormWithoutLists(request.user.id, board_id, request.POST)
     return render(request, 'beb_manager/cards/add.html', {'form': form})
