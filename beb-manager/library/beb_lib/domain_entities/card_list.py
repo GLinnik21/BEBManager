@@ -23,6 +23,9 @@ class CardsList(UniqueObject):
         super(CardsList, self).__init__(name, unique_id)
         self._cards = cards
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
     @property
     def cards(self):
         return self._cards

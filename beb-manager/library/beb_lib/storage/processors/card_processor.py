@@ -129,7 +129,7 @@ def read_card(request: CardDataRequest, user_id: int, card_list: CardListModel) 
     if request.tags:
         query = query.join(TagCard).join(TagModel).where(TagModel.id == request.tags[0])
 
-    query = query.order_by(CardModel.priority)
+    query = query.order_by(-CardModel.priority)
 
     if query.count() == 0:
         return None, BaseError(code=provider.StorageProviderErrors.CARD_DOES_NOT_EXIST,

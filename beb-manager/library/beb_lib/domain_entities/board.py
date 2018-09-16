@@ -23,6 +23,9 @@ class Board(UniqueObject):
         super(Board, self).__init__(name, unique_id)
         self._lists = lists
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
     @property
     def lists(self):
         return self._lists

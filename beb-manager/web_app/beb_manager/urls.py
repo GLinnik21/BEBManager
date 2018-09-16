@@ -1,15 +1,11 @@
 from django.conf.urls import include, url
 from django.contrib.auth import views as auth_views
+from django.views.generic import RedirectView
 
 from . import views
 
 app_name = "beb_manager"
 
-registration_patterns = [
-    url(r'^login/$', auth_views.login, name='login'),
-    url(r'^logout/$', auth_views.logout, {'next_page': 'beb_manager:login'}, name='logout'),
-    url(r'^signup/$', views.signup, name='signup'),
-]
 
 concrete_card_patterns = [
     url(r'^edit/$', views.edit_card, name='edit_card'),
@@ -34,6 +30,13 @@ board_patterns = [
     url(r'^$', views.boards, name='boards'),
     url(r'^(?P<board_id>[0-9]+)/', include(concrete_board_patterns)),
     url(r'^add/$', views.add_board, name='add_board'),
+]
+
+registration_patterns = [
+    url(r'^login/$', auth_views.login, name='login'),
+    url(r'^logout/$', auth_views.logout, {'next_page': 'beb_manager:login'}, name='logout'),
+    url(r'^signup/$', views.signup, name='signup'),
+    url(r'^.*$', RedirectView.as_view(url='/', permanent=False), name='home'),
 ]
 
 urlpatterns = [

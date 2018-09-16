@@ -11,8 +11,8 @@
         {% for beb_list in beb_lists %}
             <div class="card">
                 <div class="card-header">
-                    {{ beb_list.list.name }}
-                    <a href="{% url 'beb_manager:edit_list' board_id beb_list.list.unique_id %}"
+                    {{ beb_list.name }}
+                    <a href="{% url 'beb_manager:edit_list' board_id beb_list.unique_id %}"
                        class="btn btn-secondary btn-sm float-right">
                         {% fontawesome_icon 'edit' %}
                     </a>
@@ -21,15 +21,23 @@
                     {% for card in beb_list.cards %}
                         <li class="list-group-item">
                             {{ card.name }}
-                            <a href="{% url 'beb_manager:edit_card' board_id beb_list.list.unique_id card.unique_id %}"
+                            <a href="{% url 'beb_manager:edit_card' board_id beb_list.unique_id card.unique_id %}"
                                class="float-right">
                                 {% fontawesome_icon 'edit' %}
                             </a>
+                            <br/>
+                            {% for tag in card.tags %}
+                                <a href="#"
+                                   class="badge badge-primary"
+                                   style="background-color: {{ tag.color }}">
+                                    {{ tag.name }}
+                                </a>
+                            {% endfor %}
                         </li>
                     {% endfor %}
                 </ul>
                 <div class="card-footer">
-                    <a href="{% url 'beb_manager:add_card' board_id beb_list.list.unique_id %}"
+                    <a href="{% url 'beb_manager:add_card' board_id beb_list.unique_id %}"
                        class="btn btn-success btn-sm float-right">
                         {% fontawesome_icon 'plus' %}
                     </a>

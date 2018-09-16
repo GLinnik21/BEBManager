@@ -5,7 +5,6 @@ import beb_lib.model.exceptions as beb_exceptions
 from beb_lib.model.model import Model
 from django import forms
 from django.contrib.auth.models import User
-from django.forms import DateField, DateInput
 from tempus_dominus.widgets import DateTimePicker
 
 from web_app import settings
@@ -15,6 +14,10 @@ MODEL = Model(settings.BEB_LIB_DATABASE_PATH)
 
 class SingleInputForm(forms.Form):
     name = forms.CharField(max_length=100)
+    can_read = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(), required=False)
+    can_write = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(), required=False)
 
 
 class CardForm(forms.Form):

@@ -51,6 +51,9 @@ class Card(UniqueObject):
         self.last_modified = last_modified
         self.plan = plan
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
     @property
     def tags(self):
         return self._tags
