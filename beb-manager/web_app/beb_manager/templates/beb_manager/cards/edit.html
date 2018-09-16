@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit task{% endblock %}
+
+{% block content %}
+    {% load bootstrap4 %}
+    {{ form.media }}
+    <h2>Edit card</h2>
+    <div class='form' style="position: relative">
+        <form method="post">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            {% buttons %}
+                <button type="submit" class="btn btn-success" name="save">Submit</button>
+                <input class='btn btn-secondary' type=button value="Back" onClick="history.go(-1);">
+                <button type="submit"
+                    class="btn btn-danger float-right"
+                    name="delete"
+                    onclick="return confirm('Are you sure you want to delete this task list?');">
+                Delete
+            </button>
+            {% endbuttons %}
+        </form>
+    </div>
+{% endblock %}

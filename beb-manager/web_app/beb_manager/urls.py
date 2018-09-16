@@ -11,10 +11,15 @@ registration_patterns = [
     url(r'^signup/$', views.signup, name='signup'),
 ]
 
+concrete_card_patterns = [
+    url(r'^edit/$', views.edit_card, name='edit_card'),
+]
+
 concrete_lists_patterns = [
     url(r'^edit/$', views.edit_list, name='edit_list'),
     url(r'^delete/$', views.delete_list, name='delete_list'),
     url(r'^add/$', views.add_card, name='add_card'),
+    url(r'^card/(?P<card_id>[0-9]+)/', include(concrete_card_patterns)),
 ]
 
 concrete_board_patterns = [
