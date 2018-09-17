@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'bootstrap4',
     'fontawesome',
     'beb_manager.apps.BebManagerConfig',
+    'colorful',
 ]
 
 MIDDLEWARE = [

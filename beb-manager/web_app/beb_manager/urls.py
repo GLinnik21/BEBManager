@@ -6,7 +6,6 @@ from . import views
 
 app_name = "beb_manager"
 
-
 concrete_card_patterns = [
     url(r'^edit/$', views.edit_card, name='edit_card'),
 ]
@@ -18,12 +17,18 @@ concrete_lists_patterns = [
     url(r'^card/(?P<card_id>[0-9]+)/', include(concrete_card_patterns)),
 ]
 
+tags_patterns = [
+    url(r'^add/$', views.add_tag, name='add_tag'),
+    url(r'^(?P<tag_id>[0-9]+)/edit/$', views.edit_tag, name='edit_tag'),
+]
+
 concrete_board_patterns = [
     url(r'^$', views.lists, name='lists'),
     url(r'^edit/$', views.edit_board, name='edit_board'),
     url(r'^delete/$', views.delete_board, name='delete_board'),
     url(r'^add/$', views.add_list, name='add_list'),
     url(r'^list/(?P<list_id>[0-9]+)/', include(concrete_lists_patterns)),
+    url(r'^tags/', include(tags_patterns)),
 ]
 
 board_patterns = [

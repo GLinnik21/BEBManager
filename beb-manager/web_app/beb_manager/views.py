@@ -11,7 +11,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 
-from beb_manager.forms import SingleInputForm, CardFormWithoutLists, CardForm
+from beb_manager.forms import SingleInputForm, CardFormWithoutLists, CardForm, TagForm
 
 MODEL = Model(settings.BEB_LIB_DATABASE_PATH)
 
@@ -129,26 +129,36 @@ def delete_board(request, board_id):
 @login_required
 def lists(request, board_id):
     try:
+        tags = MODEL.tag_read()
+        for i in range(len(tags)):
+            tags[i].color = '#{0:06X}'.format(tags[i].color)
+    except beb_exceptions.TagDoesNotExistError:
+        tags = []
+
+    try:
         lists_models = MODEL.list_read(board_id, request_user_id=request.user.id)
         beb_lists = []
+
         for card_list in lists_models:
             try:
                 cards = MODEL.card_read(card_list.unique_id, request_user_id=request.user.id)
                 for card in cards:
-                    for tag_id in card.tags:
-                        tag = MODEL.tag_read(tag_id=tag_id)[0]
-                        tag.color = '#' + hex(tag.color)[2:]
-
-                    card._tags = tags
+                    for i in range(len(card.tags)):
+                        card.tags[i] = MODEL.tag_read(tag_id=card.tags[i])[0]
+                        card.tags[i].color = '#{0:06X}'.format(card.tags[i].color)
             except beb_exceptions.CardDoesNotExistError:
                 cards = []
+
             card_list._cards = cards
             beb_lists.append(card_list)
+
         return render(request, 'beb_manager/lists/lists.html',
-                      {'beb_lists': beb_lists, 'board_id': board_id})
+                      {'beb_lists': beb_lists, 'board_id': board_id, 'tags': tags})
+
     except beb_exceptions.ListDoesNotExistError:
         return render(request, 'beb_manager/lists/lists.html',
-                      {'beb_lists': [], 'board_id': board_id})
+                      {'beb_lists': [], 'board_id': board_id, 'tags': tags})
+
     except beb_exceptions.Error:
         return redirect('beb_manager:boards')
 
@@ -368,3 +378,45 @@ def edit_card(request, board_id, list_id, card_id):
             'can_write': can_write,
         })
     return render(request, 'beb_manager/cards/edit.html', {'form': form})
+
+
+@process_plans
+@login_required
+def add_tag(request, board_id):
+    if request.method == 'POST':
+        form = TagForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            color = int('0x' + form.cleaned_data['color'][1:], 16)
+            try:
+                MODEL.tag_write(tag_name=name, color=color)
+            except beb_exceptions.Error:
+                pass
+            return redirect('beb_manager:lists', board_id)
+    else:
+        form = TagForm()
+    return render(request, 'beb_manager/tags/add.html', {'form': form})
+
+
+@process_plans
+@login_required
+def edit_tag(request, tag_id, board_id):
+    try:
+        tag = MODEL.tag_read(tag_id)[0]
+    except beb_exceptions.Error:
+        return redirect('beb_manager:lists', board_id)
+
+    if request.method == 'POST':
+        form = TagForm(request.POST)
+        if form.is_valid():
+            if 'save' in request.POST:
+                new_name = form.cleaned_data['name']
+                new_color = int('0x' + form.cleaned_data['color'][1:], 16)
+
+                MODEL.tag_write(tag_id, new_name, new_color)
+            elif 'delete' in request.POST:
+                MODEL.tag_delete(tag_id)
+            return redirect('beb_manager:lists', board_id)
+    else:
+        form = TagForm(initial={'name': tag.name, 'color': '#{0:06X}'.format(tag.color)})
+    return render(request, 'beb_manager/tags/edit.html', {'form': form})

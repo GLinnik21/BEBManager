@@ -3,6 +3,8 @@ import datetime
 from beb_lib.domain_entities.supporting import Priority
 import beb_lib.model.exceptions as beb_exceptions
 from beb_lib.model.model import Model
+from colorful.forms import RGBColorField
+from colorful.widgets import ColorFieldWidget
 from django import forms
 from django.contrib.auth.models import User
 from tempus_dominus.widgets import DateTimePicker
@@ -65,3 +67,10 @@ class CardFormWithoutLists(CardForm):
     def __init__(self, *args, **kwargs):
         super(CardFormWithoutLists, self).__init__(*args, **kwargs)
         self.fields.pop('card_list')
+
+
+class TagForm(forms.Form):
+    name = forms.CharField(max_length=10, widget=forms.TextInput(attrs={'placeholder': 'Tag title'}), required=True)
+    color = RGBColorField(widget=ColorFieldWidget(colors=['#61BD4F', '#F2D900', '#FFA111', '#EB5942',
+                                                          '#C470DF', '#0576BF', '#00C1E1', '#4FEB9A',
+                                                          '#FF72CA', '#355163', '#B3BEC4']))

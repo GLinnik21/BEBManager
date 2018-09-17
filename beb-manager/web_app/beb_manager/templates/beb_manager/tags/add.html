@@ -1,12 +1,13 @@
 {% extends 'base.html' %}
 
-{% block title %}Create List{% endblock %}
+{% block title %}Create Tag{% endblock %}
 
 {% block content %}
-    <h2>Create List</h2>
+    <h2>Create Tag</h2>
     <form method="post">
         {% csrf_token %}
         {% load bootstrap4 %}
+        {{ form.media }}
         {% bootstrap_form form %}
         {% buttons %}
             <button type="submit" class="btn btn-success">Create</button>

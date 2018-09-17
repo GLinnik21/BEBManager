@@ -1,12 +1,36 @@
 {% extends 'base.html' %}
 {% load fontawesome %}
 
+
 {% block title %}Lists{% endblock %}
 {% block plus_url %}{% url 'beb_manager:add_list' board_id %}{% endblock %}
 
 {% block content %}
-    <h2>Lists</h2>
-
+    <h2>Lists
+        <button type="button"
+                class="btn btn-primary btn-sm float-right dropdown-toggle"
+                style="margin-top: 5pt"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
+            {% fontawesome_icon 'tag' %} Tags
+        </button>
+        <div class="dropdown-menu dropdown-menu-right">
+            {% for tag in tags %}
+                <a class="text-light" href="#">
+                    <div class="dropdown-item" style="background-color: {{ tag.color }}">
+                        {{ tag.name }}
+                        <a href="{% url 'beb_manager:edit_tag' board_id tag.unique_id %}"
+                           class="float-right text-light">
+                            {% fontawesome_icon 'edit' %}
+                        </a>
+                    </div>
+                </a>
+            {% endfor %}
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{% url 'beb_manager:add_tag' board_id %}">Add tag</a>
+        </div>
+    </h2>
     <div class="card-deck">
         {% for beb_list in beb_lists %}
             <div class="card">
