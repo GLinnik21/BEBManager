@@ -84,7 +84,7 @@ def write_card(request: CardDataRequest, user_id: int, card_list: CardListModel)
 
             if request.tags is not None:
                 for tag in TagModel.select().where(TagModel.id.in_(request.tags)):
-                    TagCard.create(tag=tag, card=card)
+                        TagCard.get_or_create(tag=tag, card=card)
 
             card.save()
             return [_create_card_from_orm(card)], None

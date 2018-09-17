@@ -29,4 +29,3 @@ class CardsList(UniqueObject):
     @property
     def cards(self):
         return self._cards
-
