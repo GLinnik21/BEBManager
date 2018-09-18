@@ -214,7 +214,7 @@ class Model:
 
     @log_func(LIBRARY_LOGGER_NAME)
     def card_read(self, list_id: Optional[int], card_id: int = None, card_name: str = None, tag_id: int = None,
-                  request_user_id: int = None) -> List[Card]:
+                  board_id: int = None, request_user_id: int = None) -> List[Card]:
         request = CardDataRequest(request_id=random.randrange(1000000),
                                   id=card_id,
                                   request_user_id=request_user_id,
@@ -226,6 +226,7 @@ class Model:
                                   children=None,
                                   tags=[tag_id] if tag_id is not None else [],
                                   list_id=list_id,
+                                  board_id=board_id,
                                   request_type=RequestType.READ)
 
         response, error = self.storage_provider.execute(request)
@@ -260,6 +261,7 @@ class Model:
                                   children=card_instance.children,
                                   tags=card_instance.tags,
                                   list_id=list_id,
+                                  board_id=None,
                                   request_type=RequestType.WRITE)
 
         response, error = self.storage_provider.execute(request)
@@ -287,6 +289,7 @@ class Model:
                                   children=None,
                                   tags=None,
                                   list_id=None,
+                                  board_id=None,
                                   request_type=RequestType.DELETE)
 
         response, error = self.storage_provider.execute(request)
@@ -435,14 +438,7 @@ class Model:
 
     @log_func(LIBRARY_LOGGER_NAME)
     def get_cards_in_board(self, board_id: int, user_id: int) -> List[Card]:
-        lists = self.list_read(board_id, request_user_id=user_id)
-        cards = []
-
-        for card_list in lists:
-            try:
-                cards += self.card_read(card_list.unique_id, request_user_id=user_id)
-            except CardDoesNotExistError:
-                pass
+        cards = self.card_read(None, board_id=board_id, request_user_id=user_id)
 
         return cards
 

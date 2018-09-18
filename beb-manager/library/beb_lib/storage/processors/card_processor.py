@@ -16,7 +16,8 @@ from beb_lib.storage.models import (CardListModel,
                                     TagCard,
                                     ParentChild,
                                     CardUserAccess,
-                                    PlanModel
+                                    PlanModel,
+                                    BoardModel
                                     )
 from beb_lib.storage.provider_requests import (CardDataRequest)
 
@@ -126,8 +127,10 @@ def read_card(request: CardDataRequest, user_id: int, card_list: CardListModel) 
         query = query.where(CardModel.name == request.name)
     if card_list is not None:
         query = query.where(CardModel.list == card_list)
+    if request.board_id is not None:
+        query = query.join(CardListModel).join(BoardModel).where(CardModel.list.board == request.board_id)
     if request.tags:
-        query = query.join(TagCard).join(TagModel).where(TagModel.id == request.tags[0])
+        query = query.switch(CardModel).join(TagCard).join(TagModel).where(TagModel.id == request.tags[0])
 
     query = query.order_by(-CardModel.priority)
 

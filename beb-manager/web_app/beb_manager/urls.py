@@ -20,6 +20,7 @@ concrete_lists_patterns = [
 tags_patterns = [
     url(r'^add/$', views.add_tag, name='add_tag'),
     url(r'^(?P<tag_id>[0-9]+)/edit/$', views.edit_tag, name='edit_tag'),
+    url(r'^(?P<tag_id>[0-9]+)/show/$', views.show_tag, name='show_tag'),
 ]
 
 concrete_board_patterns = [

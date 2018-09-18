@@ -8,7 +8,8 @@ ListDataRequest = namedtuple('ListDataRequest', REQUEST_ACCESS_FIELDS + ['id', '
 
 CardDataRequest = namedtuple('CardDataRequest', REQUEST_ACCESS_FIELDS + ['id', 'name', 'description',
                                                                          'expiration_date', 'priority',
-                                                                         'assignee', 'children', 'tags', 'list_id'])
+                                                                         'assignee', 'children', 'tags',
+                                                                         'list_id', 'board_id'])
 
 GetAccessRightRequest = namedtuple('GetAccessRightRequest', REQUEST_BASE_FIELDS + ['object_type',
                                                                                    'object_id',

@@ -1,3 +1,6 @@
+import datetime
+import pytz
+
 import beb_lib.model.exceptions as beb_exceptions
 from beb_lib.domain_entities.board import Board
 from beb_lib.domain_entities.card import Card
@@ -136,9 +139,10 @@ def lists(request, board_id):
         tags = []
 
     try:
+        today = datetime.datetime.today().timestamp()
         lists_models = MODEL.list_read(board_id, request_user_id=request.user.id)
         beb_lists = []
-
+        pytz.timezone()
         for card_list in lists_models:
             try:
                 cards = MODEL.card_read(card_list.unique_id, request_user_id=request.user.id)
@@ -153,11 +157,11 @@ def lists(request, board_id):
             beb_lists.append(card_list)
 
         return render(request, 'beb_manager/lists/lists.html',
-                      {'beb_lists': beb_lists, 'board_id': board_id, 'tags': tags})
+                      {'beb_lists': beb_lists, 'board_id': board_id, 'tags': tags, 'today': today})
 
     except beb_exceptions.ListDoesNotExistError:
         return render(request, 'beb_manager/lists/lists.html',
-                      {'beb_lists': [], 'board_id': board_id, 'tags': tags})
+                      {'beb_lists': [], 'board_id': board_id, 'tags': tags, 'today': today})
 
     except beb_exceptions.Error:
         return redirect('beb_manager:boards')
@@ -360,6 +364,7 @@ def edit_card(request, board_id, list_id, card_id):
         can_read = []
 
         for user in User.objects.all():
+            print(MODEL.get_right(card_id, Card, user.id))
             if bool(MODEL.get_right(card_id, Card, user.id) & AccessType.READ):
                 can_read.append(user)
             if bool(MODEL.get_right(card_id, Card, user.id) & AccessType.WRITE):
@@ -420,3 +425,19 @@ def edit_tag(request, tag_id, board_id):
     else:
         form = TagForm(initial={'name': tag.name, 'color': '#{0:06X}'.format(tag.color)})
     return render(request, 'beb_manager/tags/edit.html', {'form': form})
+
+
+@process_plans
+@login_required
+def show_tag(request, tag_id, board_id):
+    try:
+        tag = MODEL.tag_read(tag_id)[0]
+        tag.color = '#{0:06X}'.format(tag.color)
+
+        cards = MODEL.card_read(None, board_id=board_id, tag_id=tag_id)
+    except beb_exceptions.TagDoesNotExistError:
+        return redirect('beb_manager:lists', board_id)
+    except beb_exceptions.CardDoesNotExistError:
+        cards = []
+
+    return render(request, 'beb_manager/tags/show.html', {'board_id': board_id, 'tag': tag, 'cards': cards})

@@ -17,7 +17,7 @@
         </button>
         <div class="dropdown-menu dropdown-menu-right">
             {% for tag in tags %}
-                <a class="text-light" href="#">
+                <a class="text-light" href="{% url 'beb_manager:show_tag' board_id tag.unique_id %}">
                     <div class="dropdown-item" style="background-color: {{ tag.color }}">
                         {{ tag.name }}
                         <a href="{% url 'beb_manager:edit_tag' board_id tag.unique_id %}"
@@ -44,19 +44,32 @@
                 <ul class="list-group list-group-flush">
                     {% for card in beb_list.cards %}
                         <li class="list-group-item">
-                            {{ card.name }}
                             <a href="{% url 'beb_manager:edit_card' board_id beb_list.unique_id card.unique_id %}"
                                class="float-right">
                                 {% fontawesome_icon 'edit' %}
                             </a>
-                            <br/>
-                            {% for tag in card.tags %}
-                                <a href="#"
-                                   class="badge badge-primary"
-                                   style="background-color: {{ tag.color }}">
-                                    {{ tag.name }}
-                                </a>
-                            {% endfor %}
+                            <div style="display: block">
+                                {% for tag in card.tags %}
+                                    <a href="{% url 'beb_manager:show_tag' board_id tag.unique_id %}"
+                                       class="badge badge-primary"
+                                       style="background-color: {{ tag.color }}">
+                                        {{ tag.name }}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                            {{ card.name }}
+                            {% if card.expiration_date %}
+                                <div style="display: block">
+                                    <span class="badge
+                                        {% if card.expiration_date.date < today.date and card.expiration_date.time < today.time %}
+                                            badge-danger
+                                        {% else %}
+                                            badge-light
+                                        {% endif %}">
+                                        {{ card.expiration_date }}
+                                    </span>
+                                </div>
+                            {% endif %}
                         </li>
                     {% endfor %}
                 </ul>
