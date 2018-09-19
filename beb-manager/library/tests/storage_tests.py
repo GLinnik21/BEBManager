@@ -119,6 +119,7 @@ class StorageTest(unittest.TestCase):
                                   children=None,
                                   tags=tags,
                                   list_id=list_id,
+                                  board_id=None,
                                   request_type=RequestType.WRITE)
 
         result, error = self.storage_provider.execute(request)
@@ -345,6 +346,7 @@ class StorageTest(unittest.TestCase):
                                   children=None,
                                   tags=tags,
                                   list_id=card_list.unique_id,
+                                  board_id=None,
                                   request_type=RequestType.WRITE)
 
         result, error = self.storage_provider.execute(request)
@@ -380,6 +382,7 @@ class StorageTest(unittest.TestCase):
                                   children=None,
                                   tags=[],
                                   list_id=None,
+                                  board_id=None,
                                   request_type=RequestType.READ)
 
         result, error = self.storage_provider.execute(request)
@@ -418,6 +421,7 @@ class StorageTest(unittest.TestCase):
                                   children=None,
                                   tags=None,
                                   list_id=None,
+                                  board_id=None,
                                   request_type=RequestType.READ)
 
         result, error = self.storage_provider.execute(request)
@@ -426,6 +430,37 @@ class StorageTest(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertIsNotNone(result.cards)
         self.assertEqual(len(result.cards), len(cards))
+
+    def test_card_read_by_board(self):
+        user_id = random.randrange(1000)
+        board = self.create_test_board(user_id)
+
+        times = random.randrange(100)
+
+        for i in range(times):
+            card_list = self.create_test_list(user_id, board.unique_id)
+            self.create_test_card(card_list.unique_id, user_id)
+
+        request = CardDataRequest(request_id=random.randrange(1000000),
+                                  id=None,
+                                  request_user_id=user_id,
+                                  name=None,
+                                  description=None,
+                                  expiration_date=None,
+                                  priority=None,
+                                  assignee=None,
+                                  children=None,
+                                  tags=None,
+                                  list_id=None,
+                                  board_id=board.unique_id,
+                                  request_type=RequestType.READ)
+
+        result, error = self.storage_provider.execute(request)
+
+        self.assertIsNone(error)
+        self.assertIsNotNone(result)
+        self.assertIsNotNone(result.cards)
+        self.assertEqual(len(result.cards), times)
 
     def test_card_delete(self):
         card = self.create_test_card()
@@ -441,6 +476,7 @@ class StorageTest(unittest.TestCase):
                                   children=None,
                                   tags=None,
                                   list_id=None,
+                                  board_id=None,
                                   request_type=RequestType.DELETE)
 
         result, error = self.storage_provider.execute(request)
@@ -566,6 +602,7 @@ class StorageTest(unittest.TestCase):
                                       children=None,
                                       tags=tags[:len(tags) - i],
                                       list_id=card_list.unique_id,
+                                      board_id=None,
                                       request_type=RequestType.WRITE)
 
             self.storage_provider.execute(request)
@@ -582,6 +619,7 @@ class StorageTest(unittest.TestCase):
                                       children=None,
                                       tags=[tags[i]],
                                       list_id=None,
+                                      board_id=None,
                                       request_type=RequestType.READ)
             result, error = self.storage_provider.execute(request)
 
@@ -624,6 +662,7 @@ class StorageTest(unittest.TestCase):
                                   children=None,
                                   tags=[],
                                   list_id=None,
+                                  board_id=None,
                                   request_type=RequestType.READ)
         result, error = self.storage_provider.execute(request)
 
