@@ -61,7 +61,7 @@
                             {% if card.expiration_date %}
                                 <div style="display: block">
                                     <span class="badge
-                                        {% if card.expiration_date.date < today.date and card.expiration_date.time < today.time %}
+                                        {% if card.expiration_date.date <= today.date and card.expiration_date.time < today.time %}
                                             badge-danger
                                         {% else %}
                                             badge-light

@@ -1,5 +1,4 @@
 import datetime
-import pytz
 
 import beb_lib.model.exceptions as beb_exceptions
 from beb_lib.domain_entities.board import Board
@@ -139,10 +138,10 @@ def lists(request, board_id):
         tags = []
 
     try:
-        today = datetime.datetime.today().timestamp()
+        today = datetime.datetime.today()
         lists_models = MODEL.list_read(board_id, request_user_id=request.user.id)
         beb_lists = []
-        pytz.timezone()
+
         for card_list in lists_models:
             try:
                 cards = MODEL.card_read(card_list.unique_id, request_user_id=request.user.id)
@@ -321,7 +320,8 @@ def edit_card(request, board_id, list_id, card_id):
                         children_cards.append(int(card))
                     except ValueError:
                         pass
-                exp_date = form.cleaned_data['expiration_date']
+                exp_date = form.cleaned_data['expiration_date'].strftime('%Y-%m-%d %H:%M:%S')
+                print(exp_date)
                 card_list = form.cleaned_data['card_list']
                 priority = form.cleaned_data['priority']
                 assignee_user = form.cleaned_data['assignee']
