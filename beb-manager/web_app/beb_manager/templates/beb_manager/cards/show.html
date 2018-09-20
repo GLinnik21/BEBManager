@@ -94,6 +94,8 @@
         </tbody>
     </table>
     <input class='btn btn-secondary float-right' type=button value="Back" onClick="javascript:history.go(-1);">
-    <a href="{% url 'beb_manager:edit_card' board_id card.unique_id %}"
-       class='btn btn-primary'>Edit</a>
+    <a {% if card.editable %}
+        href="{% url 'beb_manager:edit_card' board_id card.unique_id %}"
+    {% endif %}
+        class='btn btn-primary'>Edit</a>
 {% endblock %}

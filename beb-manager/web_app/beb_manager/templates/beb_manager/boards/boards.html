@@ -15,7 +15,9 @@
                         <h5 class="card-title">{{ beb_board.name }}</h5>
                         <h6 class="card-subtitle mb-2 text-muted">BoardID: {{ beb_board.unique_id }}</h6>
                         <a class="btn btn-outline-secondary btn-sm btn-lg btn-block"
-                           href="{% url 'beb_manager:edit_board' beb_board.unique_id %}">
+                                {% if beb_board.editable %}
+                           href="{% url 'beb_manager:edit_board' beb_board.unique_id %}"
+                                {% endif %}>
                             Edit
                         </a>
                     </div>

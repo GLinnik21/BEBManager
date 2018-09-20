@@ -24,7 +24,9 @@
         <a class="navbar-brand" href="#">Beb Manager</a>
     </ul>
     <ul class="navbar-nav">
-        <a class="btn btn-outline-light" href="{% block plus_url %}#{% endblock %}">
+        <a class="btn btn-outline-light" {% if container_editable %}
+           href="{% block plus_url %}#{% endblock %}"
+        {% endif %}>
             {% fontawesome_icon 'plus' %}
         </a>
         <a href="#" class="nav-link dropdown-toggle active" id="navDropDownLink" data-toggle="dropdown"
