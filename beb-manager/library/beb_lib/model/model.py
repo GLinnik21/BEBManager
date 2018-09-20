@@ -451,13 +451,13 @@ class Model:
         raise ListDoesNotExistError('Card has no list or list may not be read')
 
     @log_func(LIBRARY_LOGGER_NAME)
-    def get_cards_owned_by_user(self, user_id: int) -> List[Card]:
-        cards = self.card_read(None, request_user_id=user_id)
+    def get_cards_owned_by_user(self, user_id: int, board_id=None) -> List[Card]:
+        cards = self.card_read(None, board_id=board_id, request_user_id=user_id)
         return list(filter(lambda card: card.user_id == user_id, cards))
 
     @log_func(LIBRARY_LOGGER_NAME)
-    def get_cards_assigned_user(self, user_id: int) -> List[Card]:
-        cards = self.card_read(None, request_user_id=user_id)
+    def get_cards_assigned_user(self, user_id: int, board_id=None) -> List[Card]:
+        cards = self.card_read(None, board_id=board_id, request_user_id=user_id)
         return list(filter(lambda card: card.assignee_id == user_id, cards))
 
     @log_func(LIBRARY_LOGGER_NAME)

@@ -5,18 +5,18 @@
 {% block content %}
     <h2>Editing Board</h2>
     <form method="post">
-            {% csrf_token %}
-            {% load bootstrap4 %}
-            {% bootstrap_form form %}
-            {% buttons %}
-                <button type="submit" class="btn btn-success" name="save">Submit</button>
-                <input class='btn btn-secondary' type=button value="Back" onClick="history.go(-1);">
-                <button type="submit"
+        {% csrf_token %}
+        {% load bootstrap4 %}
+        {% bootstrap_form form %}
+        {% buttons %}
+            <button type="submit" class="btn btn-success" name="save">Submit</button>
+            <input class='btn btn-secondary' type=button value="Back" onClick="history.go(-1);">
+            <button type="submit"
                     class="btn btn-danger float-right"
                     name="delete"
                     onclick="return confirm('Are you sure you want to delete this task list?');">
                 Delete
             </button>
-            {% endbuttons %}
+        {% endbuttons %}
     </form>
 {% endblock %}

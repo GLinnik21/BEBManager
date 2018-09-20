@@ -537,3 +537,27 @@ def show_tag(request, tag_id, board_id):
         cards = []
 
     return render(request, 'beb_manager/tags/show.html', {'board_id': board_id, 'tag': tag, 'cards': cards})
+
+
+@process_plans
+@login_required
+def assigned(request, board_id):
+    try:
+        cards = MODEL.get_cards_assigned_user(request.user.id, board_id)
+    except beb_exceptions.CardDoesNotExistError:
+        cards = []
+
+    return render(request, 'beb_manager/cards/sorted.html',
+                  {'board_id': board_id, 'cards': cards, 'header_title': "Showing assigned cards"})
+
+
+@process_plans
+@login_required
+def owned(request, board_id):
+    try:
+        cards = MODEL.get_cards_owned_by_user(request.user.id, board_id)
+    except beb_exceptions.CardDoesNotExistError:
+        cards = []
+
+    return render(request, 'beb_manager/cards/sorted.html',
+                  {'board_id': board_id, 'cards': cards, 'header_title': "Showing created cards"})

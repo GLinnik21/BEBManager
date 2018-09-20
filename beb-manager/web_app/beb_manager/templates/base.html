@@ -17,24 +17,26 @@
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
-        <ul class="nav nav-pills mr-auto">
-            <a class="btn btn-outline-light" href="{% url 'beb_manager:boards' %}">Boards</a>
-        </ul>
-        <ul class="navbar-nav mr-auto">
-            <a class="navbar-brand" href="#">Beb Manager</a>
-        </ul>
-        <ul class="navbar-nav">
-            <a class="btn btn-outline-light" href="{% block plus_url %}#{% endblock %}">
-                {% fontawesome_icon 'plus' %}
-            </a>
-            <li class="nav-item dropdown active">
-                <a href="#" class="nav-link dropdown-toggle" id="navDropDownLink" data-toggle="dropdown"
-                   aria-haspopup="true" aria-expanded="false">{{ user.get_username }}</a>
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navDropDownLink">
-                    <a class="dropdown-item" href="{% url 'beb_manager:logout' %}">Logout</a>
-                </div>
-            </li>
-        </ul>
+    <ul class="nav nav-pills mr-auto">
+        <a class="btn btn-outline-light" href="{% url 'beb_manager:boards' %}">Boards</a>
+    </ul>
+    <ul class="navbar-nav mr-auto">
+        <a class="navbar-brand" href="#">Beb Manager</a>
+    </ul>
+    <ul class="navbar-nav">
+        <a class="btn btn-outline-light" href="{% block plus_url %}#{% endblock %}">
+            {% fontawesome_icon 'plus' %}
+        </a>
+        <a href="#" class="nav-link dropdown-toggle active" id="navDropDownLink" data-toggle="dropdown"
+           aria-haspopup="true" aria-expanded="false">{{ user.get_username }}</a>
+        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navDropDownLink">
+            {% if board_id %}
+                <a class="dropdown-item" href="{% url 'beb_manager:assigned' board_id %}">Assigned</a>
+                <a class="dropdown-item" href="{% url 'beb_manager:owned' board_id %}">Created</a>
+            {% endif %}
+            <a class="dropdown-item" href="{% url 'beb_manager:logout' %}">Logout</a>
+        </div>
+    </ul>
 </nav>
 <main>
     <div class='container'>

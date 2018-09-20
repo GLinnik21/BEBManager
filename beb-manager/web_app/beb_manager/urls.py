@@ -31,6 +31,8 @@ concrete_board_patterns = [
     url(r'^list/(?P<list_id>[0-9]+)/', include(concrete_lists_patterns)),
     url(r'^tags/', include(tags_patterns)),
     url(r'^card/(?P<card_id>[0-9]+)/', include(concrete_card_patterns)),
+    url(r'^assigned/$', views.assigned, name='assigned'),
+    url(r'^owned/$', views.owned, name='owned'),
 ]
 
 board_patterns = [
