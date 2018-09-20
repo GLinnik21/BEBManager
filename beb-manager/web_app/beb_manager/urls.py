@@ -8,13 +8,13 @@ app_name = "beb_manager"
 
 concrete_card_patterns = [
     url(r'^edit/$', views.edit_card, name='edit_card'),
+    url(r'^show/$', views.show_card, name='show_card'),
 ]
 
 concrete_lists_patterns = [
     url(r'^edit/$', views.edit_list, name='edit_list'),
     url(r'^delete/$', views.delete_list, name='delete_list'),
     url(r'^add/$', views.add_card, name='add_card'),
-    url(r'^card/(?P<card_id>[0-9]+)/', include(concrete_card_patterns)),
 ]
 
 tags_patterns = [
@@ -30,6 +30,7 @@ concrete_board_patterns = [
     url(r'^add/$', views.add_list, name='add_list'),
     url(r'^list/(?P<list_id>[0-9]+)/', include(concrete_lists_patterns)),
     url(r'^tags/', include(tags_patterns)),
+    url(r'^card/(?P<card_id>[0-9]+)/', include(concrete_card_patterns)),
 ]
 
 board_patterns = [

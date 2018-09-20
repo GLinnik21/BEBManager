@@ -63,7 +63,7 @@ def read_board(request: BoardDataRequest, user_id: int) -> (List[Board], BaseErr
 
     for board in query:
         if bool(check_access_to_board(board, user_id) & AccessType.READ):
-            lists = [list_id for list_id in board.card_lists]
+            lists = [card_list.id for card_list in board.card_lists]
             board_response += [Board(board.name, board.id, lists)]
 
     if not board_response:

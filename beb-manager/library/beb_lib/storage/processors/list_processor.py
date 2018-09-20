@@ -71,7 +71,7 @@ def read_list(request: BoardDataRequest, board: BoardModel, user_id: int) -> (Li
 
     for card_list in query:
         if bool(check_access_to_list(card_list, user_id) & AccessType.READ):
-            cards = [card_id for card_id in card_list.cards]
+            cards = [card.id for card in card_list.cards]
             list_response += [CardsList(card_list.name, card_list.id, cards)]
 
     if not list_response:

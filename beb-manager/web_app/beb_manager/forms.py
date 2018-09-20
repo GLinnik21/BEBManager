@@ -32,7 +32,11 @@ class CardForm(forms.Form):
         tags_tuple = [(tag.unique_id, tag.name) for tag in tags]
         tags_tuple.insert(0, ('', 'n.s.'))
 
-        cards = MODEL.get_cards_in_board(board_id, user_id)
+        try:
+            cards = MODEL.get_cards_in_board(board_id, user_id)
+        except beb_exceptions.CardDoesNotExistError:
+            cards = []
+        
         card_lists = MODEL.list_read(board_id, request_user_id=user_id)
 
         cards_tuple = [(card.unique_id, card.name) for card in cards]
@@ -44,7 +48,7 @@ class CardForm(forms.Form):
         self.fields['card_list'] = forms.ChoiceField(choices=lists_tuple, required=False)
         self.fields['children_cards'] = forms.MultipleChoiceField(choices=cards_tuple, required=False)
 
-    name = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'placeholder': 'Card title'}))
+    name = forms.CharField(required=False, max_length=200, widget=forms.TextInput(attrs={'placeholder': 'Card title'}))
     description = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Card description'}))
     tags = forms.MultipleChoiceField()
     card_list = forms.ChoiceField()
@@ -55,12 +59,18 @@ class CardForm(forms.Form):
                                                                          'useCurrent': False, }),
                                           required=False)
     children_cards = forms.MultipleChoiceField()
-    assignee = forms.ModelChoiceField(
-        queryset=User.objects.all(), required=False)
-    can_read = forms.ModelMultipleChoiceField(
-        queryset=User.objects.all(), required=False)
-    can_write = forms.ModelMultipleChoiceField(
-        queryset=User.objects.all(), required=False)
+    assignee = forms.ModelChoiceField(queryset=User.objects.all(), required=False)
+    can_read = forms.ModelMultipleChoiceField(queryset=User.objects.all(), required=False)
+    can_write = forms.ModelMultipleChoiceField(queryset=User.objects.all(), required=False)
+
+    interval = forms.CharField(max_length=50, widget=forms.TextInput(attrs={'placeholder': '5 minutes'}), required=False)
+    start_repeat_at = forms.DateTimeField(
+        widget=DateTimePicker(options={'minDate': (datetime.date.today()).strftime('%Y-%m-%d'),
+                                       'useCurrent': True,
+                                       }
+                              ),
+        required=False
+    )
 
 
 class CardFormWithoutLists(CardForm):

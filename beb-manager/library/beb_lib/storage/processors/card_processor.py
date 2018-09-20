@@ -45,11 +45,14 @@ def _create_card_from_orm(card_model: CardModel) -> Card:
     for tag_card in TagCard.select().where(TagCard.card == card_model):
         tags += [tag_card.tag.id]
 
+    plan = PlanModel.get_or_none(PlanModel.card == card_model)
+    plan_id = plan.id if plan is not None else None
+
     return Card(card_model.name, card_model.id, card_model.user_id,
                 card_model.assignee_id, card_model.description,
                 card_model.expiration_date, card_model.priority,
                 children, tags, card_model.created,
-                card_model.last_modified)
+                card_model.last_modified, plan_id)
 
 
 def write_card(request: CardDataRequest, user_id: int, card_list: CardListModel) -> (List[Card], BaseError):

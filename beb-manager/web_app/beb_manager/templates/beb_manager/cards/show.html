@@ -1,104 +1,99 @@
 {% extends 'base.html' %}
 
-{% block title %}Task info{% endblock %}
-{% load task_tags %}
+{% block title %}Card info{% endblock %}
 {% block content %}
-    <h2>Task info</h2>
+    <h2>Card info</h2>
     <table class="table table-striped">
         <tbody>
         <tr>
             <td class="title">ID</td>
-            <td>{{ task.id }}</td>
+            <td>{{ card.unique_id }}</td>
         </tr>
         <tr>
             <td class="title">Title</td>
-            <td>{{ task.title }}</td>
+            <td>{{ card.name }}</td>
         </tr>
-        <tr>
-            <td class="title">Note</td>
-            <td>{{ task.note }}</td>
-        </tr>
-        <tr>
-            <td class="title">Category</td>
-            <td>
-                {% if foreign_category %}
-                    {{ category.name }}
-                {% else %}
-                    <a href="{% url 'task_manager:tasks_by_category' category.id %}"> {{ category.name }}</a>
-                {% endif %}
-            </td>
-        </tr>
+        {% if card.description %}
+            <tr>
+                <td class="title">Description</td>
+                <td>{{ card.description }}</td>
+            </tr>
+        {% endif %}
+        {% if card.tags %}
+            <tr>
+                <td class="title">Tags</td>
+                <td>
+                    {% for tag in card.tags %}
+                        <h5 style="display: inline-block">
+                            <a href="{% url 'beb_manager:show_tag' board_id tag.unique_id %}"
+                               class="badge badge-primary"
+                               style="background-color: {{ tag.color }}">
+                                {{ tag.name }}
+                            </a>
+                        </h5>
+                    {% endfor %}
+                </td>
+            </tr>
+        {% endif %}
         <tr>
             <td class="title">Priority</td>
             <td>
-                <h5><a class="badge badge-{% get_priority_badge_class task.priority %}"
-                       href="{% url 'task_manager:tasks_by_priority' task.priority %}"> {{ priority }}</a></h5>
+                <h5>{{ card.priority }}</h5>
             </td>
         </tr>
         <tr>
-            <td class="title">Status</td>
+            <td class="title">List</td>
             <td>
-                <h5><a class="badge badge-{% get_status_badge_class task.status %}"
-                       href="{% url 'task_manager:tasks_by_status' task.status %}"> {{ status }}</a></h5>
+                ID: {{ card_list.unique_id }}, Name: {{ card_list.name }}
             </td>
         </tr>
         <tr>
-            <td class="title">Created at</td>
-            <td>{{ task.created_at }}</td>
+            <td class="title">Created on</td>
+            <td>{{ card.created }}</td>
         </tr>
         <tr>
-            <td class="title">Updated at</td>
-            <td>{{ task.updated_at }}</td>
+            <td class="title">Updated on</td>
+            <td>{{ card.last_modified }}</td>
         </tr>
-        <tr>
-            <td class="title">Event</td>
-            <td>{{ task.is_event }}</td>
-        </tr>
-        <tr>
-            <td class="title">Start time</td>
-            <td>{{ task.start_time }}</td>
-        </tr>
-        <tr>
-            <td class="title">End time</td>
-            <td>{{ task.end_time }}</td>
-        </tr>
-        <tr>
-            <td class="title">Parent task</td>
-            <td>
-                {% if parent_task_title is not None %}
-                    <a href="{% url 'task_manager:show_task' task.parent_task_id %}">{{ parent_task_title }}</a>
-                {% else %}
-                    {{ parent_task_title }}
-                {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <td class="title">Assigned user</td>
-            <td>{{ assigned_user }}</td>
-        </tr>
-        <tr>
-            <td class="title">Inner tasks</td>
-            <td>
-                {% for inner_task in inner_tasks %}
-                    <a href="{% url 'task_manager:show_task' inner_task.id %}">{{ inner_task.title }}</a>
-                    {% if not forloop.last %},{% endif %}
+        {% if card.expiration_date %}
+            <tr>
+                <td class="title">Expiration date on</td>
+                <td>{{ card.expiration_date }}</td>
+            </tr>
+        {% endif %}
+        {% if card.children %}
+            <tr>
+                <td class="title">Children cards</td>
+                {% for child in card.children %}
+                    <td>
+                        <a href="{% url 'beb_manager:show_card' board_id child.unique_id %}">{{ child.name }}</a>
+                    </td>
                 {% endfor %}
-            </td>
-        </tr>
+            </tr>
+        {% endif %}
+        {% if card.assignee_id %}
+            <tr>
+                <td class="title">Assigned user</td>
+                <td>{{ card.assignee_id.username }}</td>
+            </tr>
+        {% endif %}
         <tr>
             <td class="title">Creator</td>
-            <td>{{ creator }}</td>
+            <td>{{ card.user_id.username }}</td>
         </tr>
+        {% if plan %}
+            <tr>
+                <td class="title">Interval</td>
+                <td>{{ plan.interval }}</td>
+            </tr>
+            <tr>
+                <td class="title">Last created on</td>
+                <td>{{ plan.last_created_at }}</td>
+            </tr>
+        {% endif %}
         </tbody>
     </table>
-    <input class='btn btn-primary' type=button value="Back" onClick="javascript:history.go(-1);">
-    <div class='right'>
-        <a href="{% url 'task_manager:edit_task' task.id %}" class='btn btn-warning'>Edit</a>
-        <form style='display: inline-block;' action="{% url 'task_manager:delete_task' task.id %}" method='post'>
-            {% csrf_token %}
-            <button type='submit' class='btn btn-danger'
-                    onclick="return confirm('Are you sure you want to delete this task?')">Delete
-            </button>
-        </form>
-    </div>
+    <input class='btn btn-secondary float-right' type=button value="Back" onClick="javascript:history.go(-1);">
+    <a href="{% url 'beb_manager:edit_card' board_id card.unique_id %}"
+       class='btn btn-primary'>Edit</a>
 {% endblock %}

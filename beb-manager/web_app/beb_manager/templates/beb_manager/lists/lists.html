@@ -43,8 +43,9 @@
                 </div>
                 <ul class="list-group list-group-flush">
                     {% for card in beb_list.cards %}
+
                         <li class="list-group-item">
-                            <a href="{% url 'beb_manager:edit_card' board_id beb_list.unique_id card.unique_id %}"
+                            <a href="{% url 'beb_manager:edit_card' board_id card.unique_id %}"
                                class="float-right">
                                 {% fontawesome_icon 'edit' %}
                             </a>
@@ -57,7 +58,9 @@
                                     </a>
                                 {% endfor %}
                             </div>
-                            {{ card.name }}
+                            <a href="{% url 'beb_manager:show_card' board_id card.unique_id %}">
+                                {{ card.name }}
+                            </a>
                             {% if card.expiration_date %}
                                 <div style="display: block">
                                     <span class="badge

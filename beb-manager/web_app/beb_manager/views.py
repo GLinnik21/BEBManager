@@ -1,6 +1,8 @@
 import datetime
 
 import beb_lib.model.exceptions as beb_exceptions
+import dateparser
+import pytimeparse
 from beb_lib.domain_entities.board import Board
 from beb_lib.domain_entities.card import Card
 from beb_lib.domain_entities.card_list import CardsList
@@ -244,9 +246,61 @@ def edit_list(request, board_id, list_id):
 
 @process_plans
 @login_required
+def show_card(request, board_id, card_id):
+    try:
+        card = MODEL.card_read(None, card_id, request_user_id=request.user.id)[0]
+        card_list = MODEL.get_list_of_card(card.unique_id, request.user.id)
+
+        if card.plan is not None:
+            plan = MODEL.plan_read(card.unique_id, request.user.id)
+        else:
+            plan = None
+
+        card.priority = Priority(card.priority).name
+
+        for i in range(len(card.tags)):
+            card.tags[i] = MODEL.tag_read(tag_id=card.tags[i])[0]
+            card.tags[i].color = '#{0:06X}'.format(card.tags[i].color)
+
+        if card.children is not None and card.children:
+            for i in range(len(card.children)):
+                try:
+                    child = MODEL.card_read(None, card.children[i], request_user_id=request.user.id)[0]
+                    card.children[i] = child
+                except beb_exceptions.Error:
+                    pass
+
+        card.assignee_id = User.objects.get(pk=card.assignee_id) if card.assignee_id is not None else None
+        card.user_id = User.objects.get(pk=card.user_id)
+
+        return render(request, 'beb_manager/cards/show.html', {'card': card,
+                                                               'card_list': card_list,
+                                                               'board_id': board_id,
+                                                               'plan': plan})
+    except beb_exceptions.Error:
+        return redirect('beb_manager:lists', board_id)
+
+
+@process_plans
+@login_required
 def add_card(request, board_id, list_id):
     if request.method == 'POST':
         form = CardFormWithoutLists(request.user.id, board_id, request.POST)
+        name = form.data['name']
+        if name is None or name == '' or name.isspace():
+            form.add_error('name', "Name should not be empty")
+
+        interval = form.data['interval']
+        if interval == '' or interval.isspace():
+            interval = None
+
+        if interval is not None:
+            interval = pytimeparse.parse(interval)
+            if interval is None:
+                form.add_error('interval', "Interval is incorrect")
+            if interval < 300:  # 5 minutes
+                form.add_error('interval', "Interval should be more than 5 minutes")
+
         if form.is_valid():
             name = form.cleaned_data['name']
             description = form.cleaned_data['description']
@@ -292,6 +346,13 @@ def add_card(request, board_id, list_id):
                 if user not in can_write and can_write:
                     MODEL.remove_right(new_card.unique_id, Card, user.id, AccessType.WRITE)
 
+            if interval is not None:
+                interval = datetime.timedelta(seconds=interval)
+                start_repeat_at = form.cleaned_data['start_repeat_at']
+                if start_repeat_at is None:
+                    start_repeat_at = datetime.datetime.now() - interval
+                MODEL.plan_write(new_card.unique_id, request.user.id, interval, start_repeat_at)
+
             return redirect('beb_manager:lists', board_id)
     else:
         form = CardFormWithoutLists(request.user.id, board_id, initial={'priority': Priority.MEDIUM.value})
@@ -300,13 +361,27 @@ def add_card(request, board_id, list_id):
 
 @process_plans
 @login_required
-def edit_card(request, board_id, list_id, card_id):
+def edit_card(request, board_id, card_id):
     if request.method == 'POST':
         form = CardForm(request.user.id, board_id, request.POST)
-        if form.is_valid():
-            print('delete' in request.POST)
-            if 'save' in request.POST:
-                name = form.cleaned_data['name']
+
+        if 'save' in request.POST:
+            name = form.data['name']
+            if name is None or name == '' or name.isspace():
+                form.add_error('name', "Name should not be empty")
+
+            interval = form.data['interval']
+            if interval == '' or interval.isspace():
+                interval = None
+
+            if interval is not None:
+                interval = pytimeparse.parse(interval)
+                if interval is None:
+                    form.add_error('interval', "Interval is incorrect")
+                if interval < 300:  # 5 minutes
+                    form.add_error('interval', "Interval should be more than 5 minutes")
+
+            if form.is_valid():
                 description = form.cleaned_data['description']
                 tags = []
                 for tag in form.cleaned_data['tags']:
@@ -320,8 +395,11 @@ def edit_card(request, board_id, list_id, card_id):
                         children_cards.append(int(card))
                     except ValueError:
                         pass
-                exp_date = form.cleaned_data['expiration_date'].strftime('%Y-%m-%d %H:%M:%S')
-                print(exp_date)
+
+                exp_date = form.cleaned_data['expiration_date']
+                if exp_date is not None:
+                    exp_date = exp_date.strftime('%Y-%m-%d %H:%M:%S')
+
                 card_list = form.cleaned_data['card_list']
                 priority = form.cleaned_data['priority']
                 assignee_user = form.cleaned_data['assignee']
@@ -338,7 +416,7 @@ def edit_card(request, board_id, list_id, card_id):
                                    priority=priority,
                                    tags=tags,
                                    children=children_cards)
-                MODEL.card_write(card_list, edited_card, request.user.id)
+                edited_card = MODEL.card_write(card_list, edited_card, request.user.id)
 
                 if can_read:
                     for user in can_read:
@@ -353,12 +431,29 @@ def edit_card(request, board_id, list_id, card_id):
                     if user not in can_write and can_write:
                         MODEL.remove_right(card_id, Card, user.id, AccessType.WRITE)
 
-            elif 'delete' in request.POST:
-                print("DELETE")
-                MODEL.card_delete(card_id, request_user_id=request.user.id)
+                if interval is not None:
+                    interval = datetime.timedelta(seconds=interval)
+                    start_repeat_at = form.cleaned_data['start_repeat_at']
+                    if start_repeat_at is not None:
+                        start_repeat_at = start_repeat_at.strftime('%Y-%m-%d %H:%M:%S')
+
+                    MODEL.plan_write(edited_card.unique_id, request.user.id, interval, start_repeat_at)
+                elif edited_card.plan is not None:
+                    MODEL.plan_delete(edited_card.unique_id, request.user.id)
+
+                return redirect('beb_manager:lists', board_id)
+        elif 'delete' in request.POST:
+            print("DELETE")
+            MODEL.card_delete(card_id, request_user_id=request.user.id)
             return redirect('beb_manager:lists', board_id)
     else:
-        card = MODEL.card_read(list_id, card_id=card_id, request_user_id=request.user.id)[0]
+        card = MODEL.card_read(None, card_id=card_id, request_user_id=request.user.id)[0]
+        list_id = MODEL.get_list_of_card(card.unique_id, request.user.id).unique_id
+
+        if card.plan is not None:
+            plan = MODEL.plan_read(card.unique_id, request.user.id)
+        else:
+            plan = None
 
         can_write = []
         can_read = []
@@ -381,6 +476,7 @@ def edit_card(request, board_id, list_id, card_id):
             'assignee': User.objects.get(pk=card.assignee_id) if card.assignee_id is not None else None,
             'can_read': can_read,
             'can_write': can_write,
+            'interval': plan.interval if plan is not None else None,
         })
     return render(request, 'beb_manager/cards/edit.html', {'form': form})
 

@@ -39,14 +39,18 @@ def write_plan(request: PlanDataRequest, user_id: int, card: CardModel) -> (Plan
     if bool(check_access_to_card(card, user_id) & AccessType.WRITE):
         try:
             plan_model = PlanModel.get(PlanModel.card == card)
-            plan_model.interval = request.interval.total_seconds()
-            plan_model.last_created_at = request.last_created
+            if request.interval is not None:
+                plan_model.interval = request.interval.total_seconds()
+            if request.last_created is not None:
+                plan_model.last_created_at = request.last_created
             plan_model.save()
         except DoesNotExist:
             plan_model = PlanModel.create(card=card, interval=request.interval.total_seconds(),
                                           last_created_at=request.last_created)
         return Plan(datetime.timedelta(seconds=plan_model.interval),
-                    card_id=card.id, last_created_at=plan_model.last_created_at), None
+                    card.id,
+                    plan_model.last_created_at,
+                    plan_model.id), None
     else:
         return None, BaseError(code=provider.StorageProviderErrors.ACCESS_DENIED,
                                description="This user can't write to this card")
@@ -73,6 +77,7 @@ def delete_plan(user_id: int, card: CardModel) -> (None, BaseError):
         if count == 0:
             return None, BaseError(code=provider.StorageProviderErrors.PLAN_DOES_NOT_EXIST,
                                    description="There is no plan for this task")
+    return None, None
 
 
 def process_plan_call(request: PlanDataRequest) -> (namedtuple, BaseError):
