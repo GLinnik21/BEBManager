@@ -9,7 +9,7 @@ Beb-manager is a simple task tracker library and CLI application written on Pyth
 ### Clone the repo ###
 
 ```bash
-$ git clone https://bitbucket.org/GLinnik/isp.git
+$ git clone https://github.com/GLinnik21/BEBManager.git
 ```
 
 ### Install the library ###
