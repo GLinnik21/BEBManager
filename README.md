@@ -2,7 +2,7 @@
 
 ## What is **Beb manager**? ##
 
-Beb-manager is a simple task tracker library and CLI application written on Python 3. It enables you to to create cards with tasks, group them and assign to other users with different access types.
+Beb-manager is a simple task tracker library and CLI application written in Python 3. It enables you to to create cards with tasks, group them and assign to other users with different access types.
 
 ## Installation guide ##
 
